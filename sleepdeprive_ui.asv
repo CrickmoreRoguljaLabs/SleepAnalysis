@@ -1,0 +1,31 @@
+function sleepdeprive_ui
+
+%keep master_data_struct start_date end_date
+
+figure('position',[500,400,260,80])
+
+h1 = uicontrol(gcf,'Style', 'text', 'Position', [10 55 130 18]);
+set(h1,'string','Sleep Deprive Date:','FontSize',10)
+
+hdate = uicontrol(gcf,'Style', 'pushbutton', 'Position', [150 55 100 18]);
+set(hdate,'String','Select','FontSize',10,'Callback',@selectdate)
+%uicalendar('DestinationUI', {hdate, 'String'});
+
+h2 = uicontrol(gcf,'Style', 'text', 'Position', [10 33 130 18]);
+set(h2,'string','Sleep Deprive Start:','FontSize',10)
+
+hhour = uicontrol(gcf,'Style', 'popupmenu' ,'String',0:23, 'Position', [150 32 35 18]);
+
+h2 = uicontrol(gcf,'Style', 'text', 'Position', [187 32 5 18]);
+set(h2,'string',':','FontSize',10)
+
+hmin = uicontrol(gcf,'Style', 'popupmenu' ,'String',0:5:55, 'Position', [194 32 35 18]);
+
+h3 = uicontrol(gcf,'Style', 'text', 'Position', [10 10 130 18]);
+set(h3,'string','Sleep Deprive End:','FontSize',10)
+
+    function selectdate(~,~)
+        uicalendar('DestinationUI', {hdate, 'String'});
+    end
+end
+
