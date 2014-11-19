@@ -36,7 +36,7 @@ uicontrol(gcf,'Style', 'pushbutton' ,'String','GO', 'Position', [227 6 30 47],'C
 
     % date selection function
     function selectdate(~,~)
-        uicalendar('DestinationUI', {hdate, 'String'});
+        uicalendar('DestinationUI', {hdate, 'String'},'SelectionType',1);
     end
     
     % function for output
