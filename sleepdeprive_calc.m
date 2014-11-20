@@ -124,5 +124,5 @@ SD_output_cell(2:end,1) = {master_data_struct(id_selected).genotype};
 SD_output_cell(2:end,2:end) = num2cell(outputdata_mat);
 
 % Output the data to csv
-cell2csv(fullfile(export_path,[filename_master(1:end-5),'_'...
+cell2csv(fullfile(export_path,['SD_',filename_master(1:end-5),'_'...
     master_data_struct(id_selected).genotype,'_sleep_deprive_data.csv']),SD_output_cell);
