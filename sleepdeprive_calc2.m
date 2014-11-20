@@ -28,8 +28,8 @@ uiwait(gcf)
 day2sleepdep = datenum(SDdate) - datenum(start_date) + 1;
 
 % Can't choose the first or the last day
-if day2sleepdep == 1 || day2sleepdep == n_days
-    disp('Please do not select the first/last day of data collection')
+if day2sleepdep == 1
+    disp('Please do not select the first day of data collection')
     return
 end
 
