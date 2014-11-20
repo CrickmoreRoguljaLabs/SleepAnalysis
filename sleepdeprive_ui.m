@@ -49,3 +49,10 @@ uicontrol(gcf,'Style', 'pushbutton' ,'String','GO', 'Position', [227 6 30 47],'C
         close gcf
     end
 end
+<<<<<<< HEAD
+=======
+
+%uiwait(gcf)
+
+%keep master_data_struct start_date end_date
+>>>>>>> Stephen_dev
