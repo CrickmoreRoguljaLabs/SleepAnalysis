@@ -98,10 +98,12 @@ n_days=ceil((n_bins-n_bins_first_day)/288)+1;
 mat_bounds=zeros(n_days,2);
 mat_bounds(1,1)=1;
 mat_bounds(1,2)=n_bins_first_day;
-for i=2:n_days-1
-    mat_bounds(i,1)=mat_bounds(i-1,2)+1;
-    mat_bounds(i,2)=mat_bounds(i-1,2)+288;
-end
+
+% If there is more than 1 day worth of data
+    for i=2:n_days-1
+        mat_bounds(i,1)=mat_bounds(i-1,2)+1;
+        mat_bounds(i,2)=mat_bounds(i-1,2)+288;
+    end
 if n_days>1
     mat_bounds(n_days,1)=mat_bounds(n_days-1,2)+1;
     mat_bounds(n_days,2)=n_bins;
@@ -180,8 +182,25 @@ end
 
 % Binarize binned data so that one bin of no movement counts as 5 min of
 % sleep
-sleep_mat=oblonsky_binned_data==0;
+sleep_mat = oblonsky_binned_data==0;
 
+% Sleep bound calculation. ASSUME DATA STARTS AT 8 AND ENDS AT 20 OR 8.
+% determine the number of sleep bounds
+n_sleep_bounds = floor(n_bins/144);
+
+% Determine the sleep bounds
+sleep_bounds = zeros(n_sleep_bounds,2);
+sleep_bounds(:,2) = (1 : n_sleep_bounds) * 144;
+sleep_bounds(:,1) = (1 : n_sleep_bounds) * 144 - 143;
+
+% Calculate the sleep results accordingly
+sleep_results=zeros(size(sleep_bounds,1),32);
+for i=1:n_sleep_bounds
+    sleep_results(i,:)=(sum(sleep_mat(sleep_bounds(i,1):sleep_bounds(i,2),:)))*5;
+end
+
+% Old sleep bound calculation - delete in the future
+%{
 % Calculate the sleep bounds
 n_sleep_bounds=(n_days-2)*2;
 
@@ -219,6 +238,7 @@ else
     end
 end
 
+
 % Calculate the sleep results accordingly
 sleep_results=zeros(size(sleep_bounds,1),32);
 for i=1:n_sleep_bounds
@@ -238,6 +258,7 @@ else
         disp('Keeping the last day/night sleep data')
     end
 end
+%}
 
 % Calculate the dead flies
 dead_fly_vector=(sleep_results(end-1,:)+sleep_results(end,:))==1440;
@@ -325,7 +346,7 @@ avg_activity_mat(dead_fly_vector,:)=NaN;
 % xlswrite(fullfile(export_path,[filename(1:end-4),'_activities.xls']),avg_activity_mat);
 
 % disp('Delays')
-avg_delay_mat=(5*mean(delay_mat-1))';
+avg_delay_mat=(5*mean(delay_mat-1,1))';
 avg_delay_mat(dead_fly_vector,:)=NaN;
 
 
