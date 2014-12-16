@@ -1,4 +1,4 @@
-function [ fileoutput ] = pngplot( alltraces,  subplot_plan, timelines, filename, spikecell, dir, tdtpositives)
+function [ fileoutput ] = pngplot( alltraces,  subplot_plan, filename, spikecell, dir, tdtpositives)
 %pngplot Plot a n trial * x data points plot with a specified subplot plan
 %and predetermined episodes
 %   Inputs:
@@ -38,7 +38,7 @@ end
 
 npages=ceil(size(alltraces,1)/subplot_plan(1));
 plots_left=size(alltraces,1);
-nvids2=length(timelines);
+nvids2=1;
 
 for pagenum=1:npages
     figure(101)

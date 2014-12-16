@@ -1,7 +1,7 @@
 function sleepextract
 %sleepextract uses gui to determine which data to extract and extracts it
-%from the workspace file.
-%   Detailed explanation goes here
+%from the workspace file. Written by Stephen Zhang, Dec 2014.
+
 
 %Read the setting file
 settings_file = importdata('actogram2_settings.csv');
