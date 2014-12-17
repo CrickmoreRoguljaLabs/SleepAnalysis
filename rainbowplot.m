@@ -3,7 +3,7 @@ function [ flag ] = rainbowplot( ~ )
 %   No input variable
 
 % Select the input data file (csv for now)
-[filename, pathname] = uigetfile('C:\Users\Stephen Zhang\Documents\MATLAB\Analyzed Data\*.csv'); % This address should be changed according to the user
+[filename, pathname] = uigetfile('D:\Projects\Gal4-Screen\*.csv'); % This address should be changed according to the user
 imported_data=importdata(fullfile(pathname,filename));
 
 % Read the genotypes and determine the number

@@ -274,7 +274,11 @@ for i=1:32
         
         % Use the sleepchain matrix to determine the sleep delay
         if mod(j,2)==0
-            delay_mat(j/2,i)=tempsleepchainmat(1);
+            if ~isempty(tempsleepchainmat)
+                delay_mat(j/2,i)=tempsleepchainmat(1);
+            else
+                delay_mat(j/2,i)=NaN;
+            end
         end
         
         % Obtain the number of bouts from the chainfinder results
