@@ -60,8 +60,9 @@ interval=round((datenum(monitor_data.textdata{20,3})-datenum(monitor_data.textda
 
 % If there's no start time, use the first time point to determine what time of the day the trial
 % started
-first_time=(datenum(monitor_data.textdata{1,3})-735600)/6.9444e-04;
-first_time_hr=first_time/60;
+first_time_hr = str2double(start_time(1:2)); %(datenum(monitor_data.textdata{1,3})-735600)/6.9444e-04
+
+first_time = first_time_hr * 60;
 
 % Use the period to determine how many points should be binned
 kitty_points_per_bin=round(5/interval);
@@ -300,7 +301,9 @@ for i=1:32
                 delay_mat(j/2,i)=tempsleepchainmat(1);
             end
         else
-            delay_mat(j/2,i)=NaN;
+            if mod(j,2)==0
+                delay_mat(j/2,i)=NaN;
+            end
         end
         
         % Obtain the number of bouts from the chainfinder results
