@@ -125,6 +125,9 @@ uicontrol('Parent',hfig,...
                 outputdata = getrainbow(master_data_struct,genoselected);
         end
         
+        % Suppress dead fly data
+        outputdata(:,~master_data_struct(genoselected).alive_fly_indices) = NaN;
+        
         % Copy the data to clip board
         mat2clip(outputdata)
     end
