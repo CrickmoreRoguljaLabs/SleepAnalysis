@@ -100,7 +100,7 @@ uicontrol('Parent',hfig,...
         end
         
         % Suppress dead fly data
-        outputdata(:,~master_data_struct(genoselected).alive_fly_indicies) = NaN;
+        outputdata(:,~master_data_struct(genoselected).alive_fly_indices) = NaN;
         
         % Make a data table
         datatable = figure('Position',[100 100 1000 500]);
