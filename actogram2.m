@@ -388,7 +388,7 @@ if master_mode==1
         n_dead_flies=sum(dead_fly_vector(current_channel:current_channel+n_channels_of_current_geno-1));
         
         % Write the actogram data to the master structure
-        master_data_struct(current_geno_index).data=[master_data_struct(current_geno_index).data,oblonsky_binned_data(:,current_channel:current_channel+n_channels_of_current_geno-1)];
+        master_data_struct(current_geno_index).data=[master_data_struct(current_geno_index).data,oblonsky_binned_data(:,current_channel:current_channel+n_channels_of_current_geno-1)]; %#ok<*SAGROW>
         
         % Write the sleep lengths to the mastere structure
         master_data_struct(current_geno_index).sleep=[master_data_struct(current_geno_index).sleep;avg_sleep_results(current_channel:current_channel+n_channels_of_current_geno-1,:)];

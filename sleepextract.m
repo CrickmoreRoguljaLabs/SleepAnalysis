@@ -86,7 +86,8 @@ uicontrol('Parent',hfig,...
         % Dump out the choice data
         choicedata = guidata(hObject);
         datatypeselected = choicedata.datatypeselected;
-        genoselected = choicedata.datatypeselected;
+        genoselected = choicedata.genoselected;
+
         
         % Based on what user selects as the datatype, calculate the
         % corresponding output data files.
@@ -112,7 +113,7 @@ uicontrol('Parent',hfig,...
         % Dump out the choice data
         choicedata = guidata(hObject);
         datatypeselected = choicedata.datatypeselected;
-        genoselected = choicedata.datatypeselected;
+        genoselected = choicedata.genoselected;
         
         % Based on what user selects as the datatype, calculate the
         % corresponding output data files.
