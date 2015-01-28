@@ -56,7 +56,7 @@ for k=1:ceil((size(data2print,2)/panels_per_page))
     if PC_or_not
         export_fig(fullfile(export_path,[filename,'_actogram.pdf']),'-append');
     else
-        saveas(gcf,fullfile(export_path,[filename(1:end-4),'_actogram_', num2str(k), '.pdf']));
+        saveas(gcf,fullfile(export_path,[filename,'_actogram_', num2str(k), '.pdf']));
     end
     close 101
     panels_done=panels_done+panels_per_page;
