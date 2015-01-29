@@ -9,12 +9,12 @@ export_path = settings_file{2};
 export_path = export_path(strfind(export_path, ',')+1:end);
 
 % Use UI to get the expt .mat files
-filename_expt = uigetfile([export_path,'\*.mat'],'Experimental file');
+[filename_expt,extractpath] = uigetfile([export_path,'\*.mat'],'Experimental file');
 
 % Load the variables needed from the expt .mat file. Only
 % 'master_data_struct' and 'genos' are currently used for now. Loaded
 % others for the purpose of future expansions.
-load(fullfile(export_path,filename_expt),'master_data_struct',...
+load(fullfile(extractpath,filename_expt),'master_data_struct',...
     'start_date','end_date','genos','n_genos','n_days','filename_master');
 
 % Which kinds of data types can be extracted right now
@@ -86,7 +86,7 @@ uicontrol('Parent',hfig,...
         % Dump out the choice data
         choicedata = guidata(hObject);
         datatypeselected = choicedata.datatypeselected;
-        genoselected = choicedata.datatypeselected;
+        genoselected = choicedata.genoselected;
         
         % Based on what user selects as the datatype, calculate the
         % corresponding output data files.
@@ -100,7 +100,7 @@ uicontrol('Parent',hfig,...
         end
         
         % Suppress dead fly data
-        outputdata(:,~master_data_struct(genoselected).alive_fly_indicies) = NaN;
+        outputdata(:,~master_data_struct(genoselected).alive_fly_indices) = NaN;
         
         % Make a data table
         datatable = figure('Position',[100 100 1000 500]);
@@ -112,7 +112,7 @@ uicontrol('Parent',hfig,...
         % Dump out the choice data
         choicedata = guidata(hObject);
         datatypeselected = choicedata.datatypeselected;
-        genoselected = choicedata.datatypeselected;
+        genoselected = choicedata.genoselected;
         
         % Based on what user selects as the datatype, calculate the
         % corresponding output data files.
@@ -124,6 +124,9 @@ uicontrol('Parent',hfig,...
             case 3
                 outputdata = getrainbow(master_data_struct,genoselected);
         end
+        
+        % Suppress dead fly data
+        outputdata(:,~master_data_struct(genoselected).alive_fly_indices) = NaN;
         
         % Copy the data to clip board
         mat2clip(outputdata)

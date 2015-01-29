@@ -16,16 +16,16 @@ uiwait(gcf)
 day2sleepdep = datenum(SDdate) - datenum(start_date) + 1;
 
 % Can't choose the first or the last day
-if day2sleepdep == 1 || day2sleepdep == n_days
+if day2sleepdep == 1 %|| day2sleepdep == n_days
     disp('Please do not select the first day of data collection')
     return
 end
 
 % Calculate the index for when the sleep deprivation starts
-SD_start_ind = (day2sleepdep - 1) * 288 + SDhour1 * 12 + SDmin1/5 + 1;
+SD_start_ind = (day2sleepdep - 1) * 288 + (SDhour1 - 8) * 12 + SDmin1/5 + 1;
 
 % Calculate the index for when the sleep deprivation stops
-SD_end_ind = (day2sleepdep - 1) * 288 + SDhour2 * 12 + SDmin2/5;
+SD_end_ind = (day2sleepdep - 1) * 288 + (SDhour2 - 8) * 12 + SDmin2/5;
 
 % Detect if the sleep deprivation happens over 2 dates (passing midnight).
 % If so, add another day to the end date.

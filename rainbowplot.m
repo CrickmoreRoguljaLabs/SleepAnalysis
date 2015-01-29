@@ -43,8 +43,8 @@ set(gcf,'Color',[1,1,1])
 
 % Save the fig and the data
 % saveas(gcf,fullfile(pathname,[filename(1:end-4),'_rainbow.pdf']));
-export_fig(fullfile(pathname,[filename(1:end-4),'_rainbow.pdf']));
+export_fig(fullfile(pathname,[filename(1:end-4),'_rainbow.fig']));
 % savefig(fullfile(export_path,[filename(1:end-4),'_rainbow.fig']));
-flag=fullfile(pathname,[filename(1:end-4),'_rainbow.pdf']);
+flag=fullfile(pathname,[filename(1:end-4),'_rainbow.fig']);
 end
 

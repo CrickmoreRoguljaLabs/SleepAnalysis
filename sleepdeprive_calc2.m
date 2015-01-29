@@ -12,11 +12,11 @@ export_path = settings_file{2};
 export_path = export_path(strfind(export_path, ',')+1:end);
 
 % Use UI to get the expt and control .mat files
-filename_expt = uigetfile([export_path,'\*.mat'],'Experimental file');
-filename_control = uigetfile([export_path,'\*.mat'],'Control file');
+[filename_expt, expt_path] = uigetfile([export_path,'\*.mat'],'Experimental file');
+[filename_control, path_control] = uigetfile([export_path,'\*.mat'],'Control file');
 
 % Load the variables needed from the expt .mat file
-load(fullfile(export_path,filename_expt),'master_data_struct',...
+load(fullfile(expt_path,filename_expt),'master_data_struct',...
     'start_date','end_date','genos','n_genos','n_days','filename_master');
 
 % Use ui to obtain sleep deprivation dates and times
@@ -28,10 +28,10 @@ uiwait(gcf)
 day2sleepdep = datenum(SDdate) - datenum(start_date) + 1;
 
 % Can't choose the first or the last day
-if day2sleepdep == 1
-    disp('Please do not select the first day of data collection')
-    return
-end
+% if day2sleepdep == 1
+%     disp('Please do not select the first day of data collection')
+%     return
+% end
 
 %% Obtain genotype and sleep deprivation data
 % Ask for the ID of the gene
@@ -57,10 +57,10 @@ n_flies = master_data_struct(id_selected).num_processed_flies;
 dead_flies = ~boolean(master_data_struct(id_selected).alive_fly_indices);
 
 % Calculate the index for when the sleep deprivation starts
-SD_start_ind = (day2sleepdep - 1) * 288 + SDhour1 * 12 + SDmin1/5 + 1;
+SD_start_ind = (day2sleepdep - 1) * 288 + (SDhour1 - 8) * 12 + SDmin1/5 + 1;
 
 % Calculate the index for when the sleep deprivation stops
-SD_end_ind = (day2sleepdep - 1) * 288 + SDhour2 * 12 + SDmin2/5;
+SD_end_ind = (day2sleepdep - 1) * 288 + (SDhour2 - 8) * 12 + SDmin2/5;
 
 % Detect if the sleep deprivation happens over 2 dates (passing midnight).
 % If so, add another day to the end date.
@@ -91,23 +91,23 @@ RB_sleep_data_sum = sum(RB_sleep_data)';
 
 %% Obtain control data for sleep deprivation
 % Calculate control date (the day before experiment)
-SDdate_CT = datestr(datenum(SDdate)-1,'dd-mmm-yyyy');
+% SDdate_CT = datestr(datenum(SDdate)-1,'dd-mmm-yyyy');
 
 % Load the variables needed from the expt .mat file
-load(fullfile(export_path,filename_control),'master_data_struct',...
+load(fullfile( path_control,filename_control),'master_data_struct',...
     'start_date','end_date','genos','n_genos','n_days');
 
 % Find the geno id in control file
 id_selected = find(strcmp(genos,geno_selected));
 
 % Find the day to find control data
-day2sleepcontrol = datenum(SDdate_CT) - datenum(start_date) + 1;
+day2sleepcontrol = n_days - 1; % datenum(SDdate_CT) - datenum(start_date) + 1;
 
 % Calculate the index for when the control (previous day) starts
-CT_start_ind = (day2sleepcontrol - 1) * 288 + SDhour1 * 12 + SDmin1/5 + 1;
+CT_start_ind = (day2sleepcontrol - 1) * 288 + (SDhour1 - 8) * 12 + SDmin1/5 + 1;
 
 % Calculate the index for when the control (previous day) ends
-CT_end_ind = (day2sleepcontrol - 1) * 288 + SDhour2 * 12 + SDmin2/5;
+CT_end_ind = (day2sleepcontrol - 1) * 288 + (SDhour2 - 8) * 12 + SDmin2/5;
 
 % Detect if the sleep control happens over 2 dates (passing midnight).
 % If so, add another day to the end date.
