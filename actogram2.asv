@@ -23,7 +23,7 @@ monitor_data=importdata(fullfile(pathname,filename));
 
 %% Separate data into desired days/times
 
-% Find indices for dates to include
+% Find indices 
 start_idx = find(strcmp(monitor_data.textdata(:,2), start_date));
 end_idx = find(strcmp(monitor_data.textdata(:,2), end_date));
 
@@ -48,8 +48,7 @@ monitor_data.textdata = monitor_data.textdata(start_index:end_index,:);
 
 
 
-%% Extract bin information
-
+%%
 % Use two time points to determine whether the inter-recording inverval is 0.5 or 1 min
 interval=round((datenum(monitor_data.textdata{20,3})-datenum(monitor_data.textdata{19,3}))/3.472222015261650e-04)/2;
 
@@ -60,32 +59,32 @@ first_time_hr = str2double(start_time(1:2)); %(datenum(monitor_data.textdata{1,3
 first_time = first_time_hr * 60;
 
 % Use the period to determine how many points should be binned
-points_per_bin=round(5/interval);
+kitty_points_per_bin=round(5/interval);
 
 % Obtain the actogram data
 pared_data=monitor_data.data(:,end-31:end);
 
 % Determine how many bins there will be
-n_bins=ceil(size(pared_data,1)/points_per_bin);
+n_bins=ceil(size(pared_data,1)/kitty_points_per_bin);
 
 % Determine how many points will be in the last bin
-mod_bins=mod(size(pared_data,1),points_per_bin);
+mod_bins=mod(size(pared_data,1),kitty_points_per_bin);
 if mod_bins==0;
-    mod_bins=points_per_bin;
+    mod_bins=kitty_points_per_bin;
 end
 
 % Prime the binned data matrix
-binned_data=zeros(n_bins,32);
+oblonsky_binned_data=zeros(n_bins,32);
 
 % Bin the data. Calculate the last bin separately
 for i=1:n_bins-1
-    binned_data(i,:)=sum(pared_data((i-1)*points_per_bin+1:i*points_per_bin,:));
+    oblonsky_binned_data(i,:)=sum(pared_data((i-1)*kitty_points_per_bin+1:i*kitty_points_per_bin,:));
 end
-binned_data(n_bins,:)=sum(pared_data((n_bins-1)*points_per_bin+1:(n_bins-1)*points_per_bin+mod_bins,:));
+oblonsky_binned_data(n_bins,:)=sum(pared_data((n_bins-1)*kitty_points_per_bin+1:(n_bins-1)*kitty_points_per_bin+mod_bins,:));
 
 %% Separate data by days
 % Determine how many bins will be on the first day
-n_bins_first_day=round((1920-first_time)/points_per_bin/interval);
+n_bins_first_day=round((1920-first_time)/kitty_points_per_bin/interval);
 
 % Determine how many days there will be
 n_days=ceil((n_bins-n_bins_first_day)/288)+1;
@@ -135,7 +134,7 @@ if master_mode==0
             % i is the index number for days
             for i=1:n_days
                 bbar=bar(time_bounds(i,1):5/60:time_bounds(i,1)+(mat_bounds(i,2)-mat_bounds(i,1))*5/60,... % A weird way to determine what the actual x-values are for each point
-                    binned_data(mat_bounds(i,1):mat_bounds(i,2),j+panels_done)... % The actual y-values for each point
+                    oblonsky_binned_data(mat_bounds(i,1):mat_bounds(i,2),j+panels_done)... % The actual y-values for each point
                     /100/n_days+(n_days-i)/n_days); % Normalize against 100 and divide each panel into days
                 line([8,32],[(n_days-i)/n_days,(n_days-i)/n_days],'Color',[0 0 0]); % This is a line per request of Michelle
                 set(bbar,'EdgeColor',[0 0 0]) % Set the bar edge color to black. One vote for purple [153/255 102/255 204/255] from Stephen. RIP teal (2014-2014): [0 128/255 128/255].
@@ -178,7 +177,7 @@ end
 
 % Binarize binned data so that one bin of no movement counts as 5 min of
 % sleep
-sleep_mat = binned_data==0;
+sleep_mat = oblonsky_binned_data==0;
 
 % Sleep bound calculation. ASSUME DATA STARTS AT 8 AND ENDS AT 20 OR 8.
 % determine the number of sleep bounds
@@ -194,6 +193,67 @@ sleep_results=zeros(size(sleep_bounds,1),32);
 for i=1:n_sleep_bounds
     sleep_results(i,:)=(sum(sleep_mat(sleep_bounds(i,1):sleep_bounds(i,2),:)))*5;
 end
+
+% Old sleep bound calculation - delete in the future
+%{
+% Calculate the sleep bounds
+n_sleep_bounds=(n_days-2)*2;
+
+% Keep the last day/night data for now
+if mat_bounds(end,2)-mat_bounds(end,1)<=143
+    n_sleep_bounds=n_sleep_bounds+1;
+else
+    n_sleep_bounds=n_sleep_bounds+2;
+end
+
+% Determine the sleep bounds
+sleep_bounds=zeros(n_sleep_bounds,2);
+if n_days>1
+    sleep_bounds(1,1)=mat_bounds(2,1);
+    sleep_bounds(1,2)=sleep_bounds(1,1)+143;
+    for i=2:n_sleep_bounds
+        sleep_bounds(i,1)=sleep_bounds(i-1,2)+1;
+        sleep_bounds(i,2)=sleep_bounds(i,1)+143;
+    end
+end
+sleep_bounds(n_sleep_bounds,2)=n_bins;
+
+% Determine whether Day 1 is a full day or not
+if mat_bounds(1,2)-mat_bounds(1,1)==287
+    if master_mode==0
+        % If full day, tell us and add day 1 to the sleep bounds
+        disp('Keeping day 1 sleep data')
+    end
+    sleep_bounds=[1,144;145,288;sleep_bounds];
+    n_sleep_bounds=n_sleep_bounds+2;
+else
+    if master_mode==0
+        % If not full day, tell us and keep the sleep bounds as they are
+        disp('Discarding day 1 sleep data')
+    end
+end
+
+
+% Calculate the sleep results accordingly
+sleep_results=zeros(size(sleep_bounds,1),32);
+for i=1:n_sleep_bounds
+    sleep_results(i,:)=(sum(sleep_mat(sleep_bounds(i,1):sleep_bounds(i,2),:)))*5;
+end
+
+% If the last day/night sleep data are incomplete, they are discarded.
+if mat_bounds(end,2)-mat_bounds(end,1)~=143 && mat_bounds(end,2)-mat_bounds(end,1)~=287
+    if master_mode==0
+        disp('Last day/night sleep data are not complete, thus discarded')
+    end
+    sleep_results(n_sleep_bounds,:)=[];
+    n_sleep_bounds=n_sleep_bounds-1;
+    sleep_bounds(n_sleep_bounds,:)=[];
+else
+    if master_mode==0
+        disp('Keeping the last day/night sleep data')
+    end
+end
+%}
 
 % Calculate the dead flies
 dead_fly_vector=(sleep_results(end-1,:)+sleep_results(end,:))==1440;
@@ -222,7 +282,7 @@ for i=1:32
         tempsleepvec=sleep_mat(sleep_bounds(j,1):sleep_bounds(j,2),i);
         
         % Grab the activity vector for that fly
-        tempactivityvec=binned_data(sleep_bounds(j,1):sleep_bounds(j,2),i);
+        tempactivityvec=oblonsky_binned_data(sleep_bounds(j,1):sleep_bounds(j,2),i);
         
         % Use the function "chainfinder" to find sleep bouts
         % See the function description for the explanation of the function output
@@ -322,7 +382,7 @@ if master_mode==1
         n_dead_flies=sum(dead_fly_vector(current_channel:current_channel+n_channels_of_current_geno-1));
         
         % Write the actogram data to the master structure
-        master_data_struct(current_geno_index).data=[master_data_struct(current_geno_index).data,binned_data(:,current_channel:current_channel+n_channels_of_current_geno-1)];
+        master_data_struct(current_geno_index).data=[master_data_struct(current_geno_index).data,oblonsky_binned_data(:,current_channel:current_channel+n_channels_of_current_geno-1)];
         
         % Write the sleep lengths to the mastere structure
         master_data_struct(current_geno_index).sleep=[master_data_struct(current_geno_index).sleep;avg_sleep_results(current_channel:current_channel+n_channels_of_current_geno-1,:)];
