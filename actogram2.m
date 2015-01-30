@@ -289,12 +289,12 @@ avg_delay_mat(dead_fly_vector,:)=NaN;
 
 % Construct a single output cell for the current monitor
 monitor_output_cell=cell(33,10);
-monitor_output_cell(1,:)={'total sleep','day sleep','night sleep','day bout length','night bout length',...
-    'day bout number','night bout number','day activity','night activity','delay'};
+monitor_output_cell(1,:)={'Total sleep','Day sleep','Night sleep','Sleep bout length (day)','Sleep bout length (night)',...
+    'Sleep bout number (day)','Sleep bout number (night)','Day activity','Night activity','Sleep delay'};
 monitor_output_cell(2:33,:)=num2cell([avg_sleep_results,avg_sleep_bout_length,avg_sleep_bout_num,avg_activity_mat,avg_delay_mat]);
 
 % Output the cell to a csv file
-cell2csv(fullfile(export_path,[filename(1:end-4),'_monitor_data.csv']),monitor_output_cell);
+%cell2csv(fullfile(export_path,[filename(1:end-4),'_monitor_data.csv']),monitor_output_cell);
 
 
 % Output the workspace (comment out if necessary)

@@ -153,39 +153,19 @@ idx = 2;
 
 for i = 1:n_genos
     
-    % Populate genotype
+    j = 1;
     for k = idx:idx+master_data_struct(i).num_processed_flies-1
-        sleep_output_cell{k,1} = master_data_struct(i).genotype;        
+        
+        sleep_output_cell{k,1} = master_data_struct(i).genotype;
+        
+        sleep_output_cell{k,2}
+        
     end
     
-    % Populate sleep data
-    sleep_output_cell(idx:idx+master_data_struct(i).num_processed_flies-1,2:4) =...
-        num2cell(master_data_struct(i).sleep(:,:));
     
-    % Populate bout length data
-    sleep_output_cell(idx:idx+master_data_struct(i).num_processed_flies-1,5:6) =...
-        num2cell(master_data_struct(i).sleep_bout_lengths(:,:));
-    
-    % Populate bout number data
-    sleep_output_cell(idx:idx+master_data_struct(i).num_processed_flies-1,7:8) =...
-        num2cell(master_data_struct(i).sleep_bout_numbers(:,:));
-    
-    % Populate activity data
-    sleep_output_cell(idx:idx+master_data_struct(i).num_processed_flies-1,9:10) =...
-        num2cell(master_data_struct(i).activities(:,:));
-    
-    % Populate Delay data
-    sleep_output_cell(idx:idx+master_data_struct(i).num_processed_flies-1,11) =...
-        num2cell(master_data_struct(i).delays(:,:));
-    
-    % Iterate index
     idx = idx + master_data_struct(i).num_processed_flies;
 
 end
-
-% Write the cell data
-cell2csv(fullfile(export_path,[filename_master(1:end-5),'_sleep_data.csv']),sleep_output_cell);
-
 
 %% Output files: other stuff
 
