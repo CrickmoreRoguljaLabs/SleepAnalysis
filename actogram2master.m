@@ -226,18 +226,18 @@ mat2gray([31,120,180;...
 for j = 1:rainbowgroups_n
     % Find how many and which genotypes are of the current rainbow group
     geno_indices_of_the_current_rainbowgroup = [find(rainbowgroups_vector == rainbowgroups_unique(j));find(rainbowgroups_vector == 0)]; % Plot the current group and Group 0
-    n_geno_of_the_current_rainhowgroup = length(geno_indices_of_the_current_rainbowgroup);
+    n_geno_of_the_current_rainbowgroup = length(geno_indices_of_the_current_rainbowgroup);
     
     % Prime the rainbow data matrix
-    rainbow_mat = zeros(48,n_geno_of_the_current_rainhowgroup);
-    rainbow_mat_sem = zeros(48,n_geno_of_the_current_rainhowgroup);
-    rainbow_mat_tape = zeros(size(master_data_struct(1).data,1)/6,n_geno_of_the_current_rainhowgroup);
-    rainbow_mat_sem_tape = zeros(size(master_data_struct(1).data,1)/6,n_geno_of_the_current_rainhowgroup);
+    rainbow_mat = zeros(48,n_geno_of_the_current_rainbowgroup);
+    rainbow_mat_sem = zeros(48,n_geno_of_the_current_rainbowgroup);
+    rainbow_mat_tape = zeros(size(master_data_struct(1).data,1)/6,n_geno_of_the_current_rainbowgroup);
+    rainbow_mat_sem_tape = zeros(size(master_data_struct(1).data,1)/6,n_geno_of_the_current_rainbowgroup);
     
     % Prime the output rainbow cell
-    rainbow_cell = cell(98,n_geno_of_the_current_rainhowgroup);
+    rainbow_cell = cell(98,n_geno_of_the_current_rainbowgroup);
         
-    for i = 1:n_geno_of_the_current_rainhowgroup
+    for i = 1:n_geno_of_the_current_rainbowgroup
         % Calculate the average and std/sem sleep per 5 min and 30 min of one genotype
         % Also calculate the day-by-day rainbow data (tape, inspired by the Turing machine)
         % (Ignoring dead flies)
