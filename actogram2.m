@@ -1,6 +1,15 @@
 % Generate actogram from .txt monitor data
 % Written by Stephen Zhang 2014-5-14
 
+% Note: Totals for sleep bout number/length and activities assume that the
+% number of day and night periods are equal. If that's not true, they'll
+% end up priviledging whichever period is more numerous (i.e. if a run goes
+% from 8 am to 8 pm rather than 8 am to 8 am, the bout
+% length/number/activities from the day will have greater weight in the
+% averaging and the total won't actually be reflective of the overall
+% activity of the fly). But as long as things run for at least 24 hrs we'll
+% be good!
+
 %% Batch processing initiation
 if exist('master_mode','var')==0
     master_mode=0;
@@ -181,7 +190,7 @@ end
 sleep_mat = binned_data==0;
 
 % Sleep bound calculation. ASSUME DATA STARTS AT 8 AND ENDS AT 20 OR 8.
-% determine the number of sleep bounds
+% determine the number of sleep bounds (i.e. num day/night periods [so 2x the number of days])
 n_sleep_bounds = floor(n_bins/144);
 
 % Determine the sleep bounds
@@ -209,7 +218,7 @@ avg_sleep_results(dead_fly_vector,:)=NaN;
 % xlswrite(fullfile(export_path,[filename(1:end-4),'_sleep_results.xls']),avg_sleep_results);
 
 %% Sleep bout and activity calculations
-% Initiate the matrices to store sleep bout numbers, lengths and activities
+% Initialize the matrices to store sleep bout numbers, lengths and activities
 sleep_bout_num=zeros(n_sleep_bounds,32);
 sleep_bout_length=zeros(n_sleep_bounds,32);
 activity_mat=zeros(n_sleep_bounds,32);
@@ -260,25 +269,28 @@ end
 % Output the sleep bout numbers, lengths and activities to xls (the function csvwrite does not work very well for S. M shoud try it.)
 % disp('Sleep bout numbers:')
 sleep_bout_num=sleep_bout_num';
-avg_sleep_bout_num=zeros(32,2);
-avg_sleep_bout_num(:,1)=mean(sleep_bout_num(:,1:2:n_sleep_bounds),2);
-avg_sleep_bout_num(:,2)=mean(sleep_bout_num(:,2:2:n_sleep_bounds),2);
+avg_sleep_bout_num=zeros(32,3);
+avg_sleep_bout_num(:,1)=mean(sleep_bout_num(:,1:2:n_sleep_bounds),2); %Day
+avg_sleep_bout_num(:,2)=mean(sleep_bout_num(:,2:2:n_sleep_bounds),2); %Night
+avg_sleep_bout_num(:,3)= avg_sleep_bout_num(:,1) + avg_sleep_bout_num(:,2); %Total
 avg_sleep_bout_num(dead_fly_vector,:)=NaN;
 % xlswrite(fullfile(export_path,[filename(1:end-4),'_sleep_bout_numbers.xls']),avg_sleep_bout_num);
 
 % disp('Sleep bout lengths:')
 sleep_bout_length=sleep_bout_length';
-avg_sleep_bout_length=zeros(32,2);
-avg_sleep_bout_length(:,1)=mean(sleep_bout_length(:,1:2:n_sleep_bounds),2);
-avg_sleep_bout_length(:,2)=mean(sleep_bout_length(:,2:2:n_sleep_bounds),2);
+avg_sleep_bout_length=zeros(32,3);
+avg_sleep_bout_length(:,1)=mean(sleep_bout_length(:,1:2:n_sleep_bounds),2); %Day
+avg_sleep_bout_length(:,2)=mean(sleep_bout_length(:,2:2:n_sleep_bounds),2); %Night
+avg_sleep_bout_length(:,3)= mean(avg_sleep_bout_length(:,1:2),2); %Total
 avg_sleep_bout_length(dead_fly_vector,:)=NaN;
 % xlswrite(fullfile(export_path,[filename(1:end-4),'_sleep_bout_lengths.xls']),avg_sleep_bout_length);
 
 % disp('Activities')
 activity_mat=activity_mat'/5;
-avg_activity_mat=zeros(32,2);
-avg_activity_mat(:,1)=mean(activity_mat(:,1:2:n_sleep_bounds),2);
-avg_activity_mat(:,2)=mean(activity_mat(:,2:2:n_sleep_bounds),2);
+avg_activity_mat=zeros(32,3);
+avg_activity_mat(:,1)=mean(activity_mat(:,1:2:n_sleep_bounds),2); %Day
+avg_activity_mat(:,2)=mean(activity_mat(:,2:2:n_sleep_bounds),2); %Night
+avg_activity_mat(:,3)= mean(avg_activity_mat(:,1:2),2); %Total
 avg_activity_mat(dead_fly_vector,:)=NaN;
 % xlswrite(fullfile(export_path,[filename(1:end-4),'_activities.xls']),avg_activity_mat);
 
@@ -288,9 +300,10 @@ avg_delay_mat(dead_fly_vector,:)=NaN;
 
 
 % Construct a single output cell for the current monitor
-monitor_output_cell=cell(33,10);
+monitor_output_cell=cell(33,13);
 monitor_output_cell(1,:)={'Total sleep','Day sleep','Night sleep','Sleep bout length (day)','Sleep bout length (night)',...
-    'Sleep bout number (day)','Sleep bout number (night)','Day activity','Night activity','Sleep delay'};
+    'Sleep bout length (total)','Sleep bout number (day)','Sleep bout number (night)',...
+    'Sleep bout number (total)', 'Day activity','Night activity', 'Total activity', 'Sleep delay'};
 monitor_output_cell(2:33,:)=num2cell([avg_sleep_results,avg_sleep_bout_length,avg_sleep_bout_num,avg_activity_mat,avg_delay_mat]);
 
 % Output the cell to a csv file

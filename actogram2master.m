@@ -35,7 +35,7 @@ n_genos = size(genos,1);
 master_data_struct = struct('genotype','','rainbowgroup',[],'num_alive_flies',0,'num_processed_flies',0,'alive_fly_indices',[],'data',[],'sleep',[],'sleep_bout_lengths',[],'sleep_bout_numbers',[],'activities',[],'delays',[]);
 master_data_struct(1:n_genos,1) = master_data_struct;
 
-% Label the genotypes and rainbow indices on the master data strcuture
+% Label the genotypes and rainbow indices on the master data structure
 for i = 1:n_genos
     % Label genotypes
     master_data_struct(i).genotype = genos{i};
@@ -87,10 +87,11 @@ close(h)
 
 %% Output files: average sleep data
 % Prime the cell to write data in
-average_output_cell = cell(n_genos+1,13);
+average_output_cell = cell(n_genos+1,16);
 average_output_cell(1,:) = {'geno','# loaded','# alive','total sleep','day sleep',...
-    'night sleep','day bout length','night bout length','day bout number',...
-    'night bout number','day activity','night activity','delays'};
+    'night sleep','day bout length','night bout length','total bout length',...
+    'day bout number','night bout number','total bout number',...
+    'day activity','night activity','total activity','delays'};
 
 for ii = 1:n_genos
     % First column shows the genotypes
@@ -117,20 +118,30 @@ for ii = 1:n_genos
     % Eighth column shows average night-time sleep bout length per genotype
     average_output_cell{ii+1,8} = nanmean(master_data_struct(ii).sleep_bout_lengths(:,2));
     
-    % Ninth column shows average day-time sleep bout number per genotype
-    average_output_cell{ii+1,9} = nanmean(master_data_struct(ii).sleep_bout_numbers(:,1));
+    % Ninth column shows average total sleep bout length per genotype
+    average_output_cell{ii+1,9} = nanmean(master_data_struct(ii).sleep_bout_lengths(:,3));
     
-    % Tenth column shows average night-time sleep bout number per genotype
-    average_output_cell{ii+1,10} = nanmean(master_data_struct(ii).sleep_bout_numbers(:,2));
+    % Tenth column shows average day-time sleep bout number per genotype
+    average_output_cell{ii+1,10} = nanmean(master_data_struct(ii).sleep_bout_numbers(:,1));
     
-    % Eleventh column shows average day-time activity per genotype
-    average_output_cell{ii+1,11} = nanmean(master_data_struct(ii).activities(:,1));
+    % Eleventh column shows average night-time sleep bout number per genotype
+    average_output_cell{ii+1,11} = nanmean(master_data_struct(ii).sleep_bout_numbers(:,2));
     
-    % Twelfth column shows average night-time activity per genotype
-    average_output_cell{ii+1,12} = nanmean(master_data_struct(ii).activities(:,2));
+    % Twelfth column shows average total sleep bout number per genotype
+    average_output_cell{ii+1,12} = nanmean(master_data_struct(ii).sleep_bout_numbers(:,3));
     
-    % Thirteenth column shows average night-time delay per genotype
-    average_output_cell{ii+1,13} = nanmean(master_data_struct(ii).delays);
+    % Thirteenth column shows average day-time activity per genotype
+    average_output_cell{ii+1,13} = nanmean(master_data_struct(ii).activities(:,1));
+    
+    % Fourteenth column shows average night-time activity per genotype
+    average_output_cell{ii+1,14} = nanmean(master_data_struct(ii).activities(:,2));
+    
+    % Fifteenth column shows average night-time activity per genotype
+    average_output_cell{ii+1,15} = nanmean(master_data_struct(ii).activities(:,3));
+    
+    % Sixteenth column shows average night-time delay per genotype
+    average_output_cell{ii+1,16} = nanmean(master_data_struct(ii).delays);
+    
 end
 
 
@@ -141,12 +152,13 @@ cell2csv(fullfile(export_path,[filename_master(1:end-5),'_average_sleep_data.csv
 %% Output files: concatenated sleep data (per fly)
 
 % Initialize the cell & add column headers
-sleep_output_cell = cell(sum([master_data_struct.num_processed_flies])+1,11);
+sleep_output_cell = cell(sum([master_data_struct.num_processed_flies])+1,14);
 
 sleep_output_cell(1,:) = {'Genotype', 'Total sleep', 'Day sleep',...
     'Night sleep', 'Day sleep bout length', 'Night sleep bout length',...
-    'Day sleep bout number', 'Night sleep bout number', 'Day activity',...
-    'Night activity', 'Sleep delays'};
+    'Total sleep bout length', 'Day sleep bout number',...
+    'Night sleep bout number', 'Total sleep bout number', 'Day activity',...
+    'Night activity', 'Total activity', 'Sleep delays'};
 
 % Establish counter to keep track of row position in cell
 idx = 2;
@@ -163,19 +175,19 @@ for i = 1:n_genos
         num2cell(master_data_struct(i).sleep(:,:));
     
     % Populate bout length data
-    sleep_output_cell(idx:idx+master_data_struct(i).num_processed_flies-1,5:6) =...
+    sleep_output_cell(idx:idx+master_data_struct(i).num_processed_flies-1,5:7) =...
         num2cell(master_data_struct(i).sleep_bout_lengths(:,:));
     
     % Populate bout number data
-    sleep_output_cell(idx:idx+master_data_struct(i).num_processed_flies-1,7:8) =...
+    sleep_output_cell(idx:idx+master_data_struct(i).num_processed_flies-1,8:10) =...
         num2cell(master_data_struct(i).sleep_bout_numbers(:,:));
     
     % Populate activity data
-    sleep_output_cell(idx:idx+master_data_struct(i).num_processed_flies-1,9:10) =...
+    sleep_output_cell(idx:idx+master_data_struct(i).num_processed_flies-1,11:13) =...
         num2cell(master_data_struct(i).activities(:,:));
     
     % Populate Delay data
-    sleep_output_cell(idx:idx+master_data_struct(i).num_processed_flies-1,11) =...
+    sleep_output_cell(idx:idx+master_data_struct(i).num_processed_flies-1,14) =...
         num2cell(master_data_struct(i).delays(:,:));
     
     % Iterate index
