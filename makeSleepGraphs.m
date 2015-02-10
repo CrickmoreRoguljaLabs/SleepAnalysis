@@ -50,8 +50,9 @@ line([0 num_genos+5], [day_avg-day_std day_avg-day_std], 'Color', [0.5 0.5 0.5])
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
-tightfig;
+rotateticklabel(gca,45);
 savefig(gcf, fullfile(sleep_path, [tag,'Day-Sleep.fig']));
+saveas(gcf, fullfile(sleep_path, [tag,'Day-Sleep.pdf']));
 
 figure('Color', [1 1 1]); notBoxPlot(night_sleep); title('Night Sleep', 'FontWeight', 'bold');
 hold on; line([0 num_genos+5], [night_avg night_avg]);
@@ -60,8 +61,9 @@ line([0 num_genos+5], [night_avg-night_std night_avg-night_std], 'Color', [0.5 0
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
-tightfig;
+rotateticklabel(gca,45);
 savefig(gcf, fullfile(sleep_path, [tag,'Night-Sleep.fig']));
+saveas(gcf, fullfile(sleep_path, [tag,'Night-Sleep.pdf']));
 
 figure('Color', [1 1 1]); notBoxPlot(total_sleep); title('Total Sleep', 'FontWeight', 'bold');
 hold on; line([0 num_genos+5], [total_avg total_avg]);
@@ -70,8 +72,9 @@ line([0 num_genos+5], [total_avg+total_std total_avg+total_std], 'Color', [0.5 0
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
-tightfig;
+rotateticklabel(gca,45);
 savefig(gcf, fullfile(sleep_path, [tag,'Total-Sleep.fig']));
+saveas(gcf, fullfile(sleep_path, [tag,'Total-Sleep.pdf']));
 
 
 %% Make bout graphs
@@ -102,8 +105,9 @@ line([0 num_genos+5], [day_bout_avg-day_bout_std day_bout_avg-day_bout_std], 'Co
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
-tightfig;
+rotateticklabel(gca,45);
 savefig(gcf, fullfile(sleep_path, [tag,'Day-Bout-Length.fig']));
+saveas(gcf, fullfile(sleep_path, [tag,'Day-Bout-Length.pdf']));
 
 figure('Color', [1 1 1]); notBoxPlot(night_bouts); title('Sleep Bout Length - Night', 'FontWeight', 'bold');
 hold on; line([0 num_genos+5], [night_bout_avg night_bout_avg]);
@@ -112,8 +116,9 @@ line([0 num_genos+5], [night_bout_avg-night_bout_std night_bout_avg-night_bout_s
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
-tightfig;
+rotateticklabel(gca,45);
 savefig(gcf, fullfile(sleep_path, [tag,'Night-Bout-Length.fig']));
+saveas(gcf, fullfile(sleep_path, [tag,'Night-Bout-Length.pdf']));
 
 %% Make activity graph
 
@@ -143,8 +148,9 @@ line([0 num_genos+5], [day_act_avg-day_act_std day_act_avg-day_act_std], 'Color'
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Beam crossings/waking minute');
-tightfig;
+rotateticklabel(gca,45);
 savefig(gcf, fullfile(sleep_path, [tag,'Day-Activity.fig']));
+saveas(gcf, fullfile(sleep_path, [tag,'Day-Activity.pdf']));
 
 figure('Color', [1 1 1]); notBoxPlot(night_activity); title('Night Activity', 'FontWeight', 'bold');
 hold on; line([0 num_genos+5], [night_act_avg night_act_avg]);
@@ -153,5 +159,6 @@ line([0 num_genos+5], [night_act_avg-night_act_std night_act_avg-night_act_std],
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Beam crossings/waking minute');
+rotateticklabel(gca,45);
 savefig(gcf, fullfile(sleep_path, [tag,'Night-Activity.fig']));
-tightfig;
+saveas(gcf, fullfile(sleep_path, [tag,'Night-Activity.pdf']));
