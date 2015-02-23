@@ -57,10 +57,10 @@ n_flies = master_data_struct(id_selected).num_processed_flies;
 dead_flies = ~boolean(master_data_struct(id_selected).alive_fly_indices);
 
 % Calculate the index for when the sleep deprivation starts
-SD_start_ind = (day2sleepdep - 1) * 288 + (SDhour1 - 8) * 12 + SDmin1/5 + 1;
+SD_start_ind = (day2sleepdep - 1) * 288 + SDhour1 * 12 + SDmin1/5 + 1;
 
 % Calculate the index for when the sleep deprivation stops
-SD_end_ind = (day2sleepdep - 1) * 288 + (SDhour2 - 8) * 12 + SDmin2/5;
+SD_end_ind = (day2sleepdep - 1) * 288 + SDhour2 * 12 + SDmin2/5;
 
 % Detect if the sleep deprivation happens over 2 dates (passing midnight).
 % If so, add another day to the end date.
@@ -104,10 +104,10 @@ id_selected = find(strcmp(genos,geno_selected));
 day2sleepcontrol = n_days - 1; % datenum(SDdate_CT) - datenum(start_date) + 1;
 
 % Calculate the index for when the control (previous day) starts
-CT_start_ind = (day2sleepcontrol - 1) * 288 + (SDhour1 - 8) * 12 + SDmin1/5 + 1;
+CT_start_ind = (day2sleepcontrol - 1) * 288 + SDhour1 * 12 + SDmin1/5 + 1;
 
 % Calculate the index for when the control (previous day) ends
-CT_end_ind = (day2sleepcontrol - 1) * 288 + (SDhour2 - 8) * 12 + SDmin2/5;
+CT_end_ind = (day2sleepcontrol - 1) * 288 + SDhour2 * 12 + SDmin2/5;
 
 % Detect if the sleep control happens over 2 dates (passing midnight).
 % If so, add another day to the end date.
