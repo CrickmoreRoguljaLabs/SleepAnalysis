@@ -24,11 +24,11 @@ hdate = uicontrol(gcf,'Style', 'pushbutton', 'Position', [146 55 110 18]);
 set(hdate,'String','Select','FontSize',10,'Callback',@selectdate)
 
 % UI for selecting when sleep deprivation starts
-hhour1 = uicontrol(gcf,'Style', 'popupmenu' ,'String',[8:23,0:8], 'Position', [146 34 35 18]);
+hhour1 = uicontrol(gcf,'Style', 'popupmenu' ,'String',{8:23,0:7,'8_late'}, 'Position', [146 34 35 18]);
 hmin1 = uicontrol(gcf,'Style', 'popupmenu' ,'String',0:5:55, 'Position', [190 34 35 18]);
 
 % UI for selecting when sleep deprivation ends
-hhour2 = uicontrol(gcf,'Style', 'popupmenu' ,'String',[8:23,0:8], 'Position', [146 11 35 18]);
+hhour2 = uicontrol(gcf,'Style', 'popupmenu' ,'String',{8:23,0:7,'8_late'}, 'Position', [146 11 35 18]);
 hmin2 = uicontrol(gcf,'Style', 'popupmenu' ,'String',0:5:55, 'Position', [190 11 35 18]);
 
 % UI for output data
