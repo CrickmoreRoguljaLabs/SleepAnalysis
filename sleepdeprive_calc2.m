@@ -272,6 +272,11 @@ if plot_or_not ==1
     x_axis_vector = SDhour1 + SDmin1 / 60 : x_tick_interval :...
         SDhour1 + SDmin1 / 60 + (n_bins_SD_plot + n_bins_RB_plot) / 2;
     
+    % Transform the time back to normal time
+    x_axis_vector = x_axis_vector + 8;
+    ind_4_trans = find( x_axis_vector >= 24);
+    x_axis_vector( ind_4_trans ) = x_axis_vector( ind_4_trans ) - 24;
+    
     % Set the x tick mark to be 24 hour cycle
     x_axis_vector_v1 = x_axis_vector;
     x_axis_vector_v2 = x_axis_vector - 24;

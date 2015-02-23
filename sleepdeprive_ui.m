@@ -41,12 +41,23 @@ uicontrol(gcf,'Style', 'pushbutton' ,'String','GO', 'Position', [227 6 30 47],'C
     
     % function for output
     function calculatedata(~,~)
-        assignin('base', 'SDhour1', get(hhour1,'Value') - 1);
-        assignin('base', 'SDhour2', get(hhour2,'Value') - 1);
+        assignin('base', 'SDhour1', zttransform(get(hhour1,'Value') - 1));
+        assignin('base', 'SDhour2', zttransform(get(hhour2,'Value') - 1));
         assignin('base', 'SDmin1', (get(hmin1,'Value') - 1) * 5);
         assignin('base', 'SDmin2', (get(hmin2,'Value') - 1) * 5);
         assignin('base', 'SDdate', get(hdate,'String'));
         close gcf
+    end
+    
+    % function to transform time a new one where each day starts at 8 am
+    function newtime = zttransform(regulartime)
+        % Take away 8 hours from regular time
+        newtime = regulartime - 8;
+        
+        % If the time is negative, add 24 hours to it.
+        if newtime < 0
+            newtime = newtime + 24;
+        end
     end
 end
 
