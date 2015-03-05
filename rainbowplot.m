@@ -3,7 +3,7 @@ function [ flag ] = rainbowplot( ~ )
 %   No input variable
 
 % Select the input data file (csv for now)
-[filename, pathname] = uigetfile('C:\Users\Stephen Zhang\Documents\MATLAB\Analyzed Data\*.csv'); % This address should be changed according to the user
+[filename, pathname] = uigetfile('/Users/hannahsomhegyi/Desktop/Dragana lab/After/Behavior/Analyzed Data/*.csv'); % This address should be changed according to the user
 imported_data=importdata(fullfile(pathname,filename));
 
 % Read the genotypes and determine the number
@@ -32,14 +32,19 @@ for i=1:n_genos
 end
 
 % Create the rainbox plots
-errorbar(rainbow_mat,rainbow_mat_sem,'-o','LineWidth',1.5);
+mseb(1:48,rainbow_mat',rainbow_mat_sem');
 axis([1,49,0,30])
 set(gca,'XTick',1:8:49)
 set(gca,'XTickLabel',{'8','12','16','20','24','4','8'})
 legend(genos,'Location', 'SouthEast')
+legend boxoff
 xlabel('Time')
 ylabel('sleep per 30 min (min)')
 set(gcf,'Color',[1,1,1])
+
+% Get rid of that silly box
+hold on
+set(gca, 'box', 'off');
 
 % Save the fig and the data
 % saveas(gcf,fullfile(pathname,[filename(1:end-4),'_rainbow.pdf']));

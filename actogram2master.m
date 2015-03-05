@@ -1,6 +1,11 @@
 % This file enables batch processing monitor files and organize data based
 % on genotypes.
 
+% make that shit pretty
+set(0,'DefaultFigureColormap',cbrewer('seq','PuBuGn',9));
+set(0,'DefaultAxesColorOrder',cbrewer('qual','Set2',8))
+set(0,'DefaultLineLineWidth',1.2)
+
 %% Initiation
 
 % Label batch processing and read the batch processing parameter file 
@@ -218,23 +223,6 @@ rainbowgroups_unique = unique(rainbowgroups_vector(rainbowgroups_vector>-99999),
 rainbowgroups_unique=rainbowgroups_unique(rainbowgroups_unique~=0); %Group 0 reserved for universal controls
 rainbowgroups_n = length(rainbowgroups_unique);
 
-% Define colormap
-thiscolormap = ...
-mat2gray([31,120,180;...
-51,160,44;...
-227,26,28;...
-255,127,0;...
-106,61,154;...
-177,89,40;...
-166,206,227;...
-178,223,138;...
-251,154,153;...
-253,191,111;...
-202,178,214;...
-255,255,153]);
-
-
-
 for j = 1:rainbowgroups_n
     % Find how many and which genotypes are of the current rainbow group
     geno_indices_of_the_current_rainbowgroup = [find(rainbowgroups_vector == rainbowgroups_unique(j));find(rainbowgroups_vector == 0)]; % Plot the current group and Group 0
@@ -275,16 +263,14 @@ for j = 1:rainbowgroups_n
     end
     
     % Create the rainbox plots
-    errorbar(rainbow_mat,rainbow_mat_sem,'-o','LineWidth',1.5);
-    colormap(gcf,thiscolormap);
+    mseb(1:48,rainbow_mat',rainbow_mat_sem');
     axis([1,49,0,30])
     set(gca,'XTick',1:8:49)
     set(gca,'XTickLabel',{'8','12','16','20','24','4','8'})
     legend({master_data_struct(geno_indices_of_the_current_rainbowgroup).genotype},'Location', 'SouthEast')
     xlabel('Time')
     ylabel('sleep per 30 min (min)')
-    set(gcf,'Color',[1,1,1])
-    
+  
     % Save the fig and the data
     % saveas(fullfile(export_path,[filename_master(1:end-5),'_',num2str(rainbowgroups_unique(j)),'_rainbow.pdf']));
     savefig(fullfile(export_path,[filename_master(1:end-5),'_',num2str(rainbowgroups_unique(j)),'_rainbow.fig']));
@@ -300,18 +286,24 @@ for j = 1:rainbowgroups_n
         set(102,'Position',plotsizevec);
         for k=1:n_days
             subplot(3,3,k)
-            errorbar(rainbow_mat_tape((k-1)*48+1:(k-1)*48+48,:),rainbow_mat_sem_tape((k-1)*48+1:(k-1)*48+48,:),'-o','LineWidth',1.3,'MarkerSize',2);
-            colormap(102,thiscolormap);
+            mseb(1:48,rainbow_mat_tape((k-1)*48+1:(k-1)*48+48,:)',rainbow_mat_sem_tape((k-1)*48+1:(k-1)*48+48,:)');
+            %errorbar(rainbow_mat_tape((k-1)*48+1:(k-1)*48+48,:),rainbow_mat_sem_tape((k-1)*48+1:(k-1)*48+48,:),'-o','LineWidth',1.3,'MarkerSize',2)
             axis([1,49,0,30])
             set(gca,'XTick',1:8:49);
             rainbow_tape_xlabel_cell = {'8','12','16','20','24','4','8'};
             set(gca,'XTickLabel',rainbow_tape_xlabel_cell)
             if k==n_days
                 legend({master_data_struct(geno_indices_of_the_current_rainbowgroup).genotype},'Location', 'SouthEast')
+                legend boxoff
             end
             xlabel('Time')
             ylabel('sleep per 30 min (min)')
             set(gcf,'Color',[1,1,1])
+            
+            % Get rid of that silly box
+            hold on
+            set(gca, 'box', 'off');
+          
         end
         if panels2print > 6
             tightfig;
