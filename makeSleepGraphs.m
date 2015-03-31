@@ -4,19 +4,36 @@
 
 %% Extract general info
 
-% Select sleep file to analyze
-[meta_file, sleep_path] = uigetfile('D:\Projects\Gal4-Screen\*.mat');
-sleepData = importdata(fullfile(sleep_path, meta_file));
+% Determine whether to open a file from memory or use data in the workspace
+if exist('master_data_struct')
+    
+    % Create tag for saving figures
+    tag = [filename_master(1:end-5),'_'];
+    
+    % Reformat the relevant data
+    sleepData.master_data_struct = master_data_struct;
+    genotypes = {master_data_struct.genotype}; 
+    num_genos = length(genotypes);
+    max_num_flies = max([master_data_struct.num_alive_flies]);
+    
+    % Determine the output location
+    sleep_path = export_path;
+    
+else
+    % Select sleep file to analyze
+    [meta_file, sleep_path] = uigetfile('D:\Projects\Gal4-Screen\*.mat');
+    sleepData = importdata(fullfile(sleep_path, meta_file));
 
-% Creat tag for saving figures
-tag = regexp(meta_file,'_','split');
-tag = [tag{1}, '_'];
+    % Create tag for saving figures
+    tag = [sleepData.filename_master(1:end-5),'_'];
 
-genotypes = {sleepData.master_data_struct.genotype};
+    % Extract relevant parameters
+    genotypes = {sleepData.master_data_struct.genotype};
 
-num_genos = length(genotypes);
-max_num_flies = max([sleepData.master_data_struct.num_alive_flies]);
-
+    num_genos = length(genotypes);
+    max_num_flies = max([sleepData.master_data_struct.num_alive_flies]);
+end
+    
 %% Make sleep graphs
 
 % Extract sleep info
@@ -44,9 +61,10 @@ total_std = nanstd(nanmean(total_sleep));
 
 % Make graphs
 notBoxPlot2(day_sleep); title('Day Sleep', 'FontWeight', 'bold');
-hold on; line([0 num_genos+5], [day_avg day_avg], 'Color', 'k', 'linewidth', 1);
-line([0 num_genos+5], [day_avg+day_std day_avg+day_std], 'Color', [0.5 0.5 0.5]);
-line([0 num_genos+5], [day_avg-day_std day_avg-day_std], 'Color', [0.5 0.5 0.5]); 
+hold on; er1 = line([0 num_genos+5], [day_avg day_avg], 'Color', 'k', 'linewidth', 1);
+er2 = line([0 num_genos+5], [day_avg+day_std day_avg+day_std], 'Color', [0.5 0.5 0.5]);
+er3 = line([0 num_genos+5], [day_avg-day_std day_avg-day_std], 'Color', [0.5 0.5 0.5]); 
+uistack([er1, er2, er3], 'bottom');
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
@@ -55,9 +73,10 @@ savefig(gcf, fullfile(sleep_path, [tag,'Day-Sleep.fig']));
 saveas(gcf, fullfile(sleep_path, [tag,'Day-Sleep.pdf']));
 
 notBoxPlot2(night_sleep); title('Night Sleep', 'FontWeight', 'bold');
-hold on; line([0 num_genos+5], [night_avg night_avg], 'Color', 'k');
-line([0 num_genos+5], [night_avg+night_std night_avg+night_std], 'Color', [0.5 0.5 0.5]);
-line([0 num_genos+5], [night_avg-night_std night_avg-night_std], 'Color', [0.5 0.5 0.5]); 
+hold on; er1 = line([0 num_genos+5], [night_avg night_avg], 'Color', 'k');
+er2 = line([0 num_genos+5], [night_avg+night_std night_avg+night_std], 'Color', [0.5 0.5 0.5]);
+er3 = line([0 num_genos+5], [night_avg-night_std night_avg-night_std], 'Color', [0.5 0.5 0.5]); 
+uistack([er1, er2, er3], 'bottom');
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
@@ -66,9 +85,11 @@ savefig(gcf, fullfile(sleep_path, [tag,'Night-Sleep.fig']));
 saveas(gcf, fullfile(sleep_path, [tag,'Night-Sleep.pdf']));
 
 notBoxPlot2(total_sleep); title('Total Sleep', 'FontWeight', 'bold');
-hold on; line([0 num_genos+5], [total_avg total_avg], 'Color', 'k');
-line([0 num_genos+5], [total_avg-total_std total_avg-total_std], 'Color', [0.5 0.5 0.5]); 
-line([0 num_genos+5], [total_avg+total_std total_avg+total_std], 'Color', [0.5 0.5 0.5]); 
+hold on; 
+er1 = line([0 num_genos+5], [total_avg total_avg], 'Color', 'k');
+er2 = line([0 num_genos+5], [total_avg-total_std total_avg-total_std], 'Color', [0.5 0.5 0.5]); 
+er3 = line([0 num_genos+5], [total_avg+total_std total_avg+total_std], 'Color', [0.5 0.5 0.5]); 
+uistack([er1, er2, er3], 'bottom');
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
@@ -99,9 +120,11 @@ night_bout_std = nanstd(nanmean(night_bouts));
 
 % Make graphs
 notBoxPlot2(day_bouts); title('Sleep Bout Length - Day', 'FontWeight', 'bold');
-hold on; line([0 num_genos+5], [day_bout_avg day_bout_avg], 'Color', 'k');
-line([0 num_genos+5], [day_bout_avg+day_bout_std day_bout_avg+day_bout_std], 'Color', [0.5 0.5 0.5]); 
-line([0 num_genos+5], [day_bout_avg-day_bout_std day_bout_avg-day_bout_std], 'Color', [0.5 0.5 0.5]); 
+hold on; 
+er1 = line([0 num_genos+5], [day_bout_avg day_bout_avg], 'Color', 'k');
+er2 = line([0 num_genos+5], [day_bout_avg+day_bout_std day_bout_avg+day_bout_std], 'Color', [0.5 0.5 0.5]); 
+er3 = line([0 num_genos+5], [day_bout_avg-day_bout_std day_bout_avg-day_bout_std], 'Color', [0.5 0.5 0.5]); 
+uistack([er1, er2, er3], 'bottom');
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
@@ -110,9 +133,11 @@ savefig(gcf, fullfile(sleep_path, [tag,'Day-Bout-Length.fig']));
 saveas(gcf, fullfile(sleep_path, [tag,'Day-Bout-Length.pdf']));
 
 notBoxPlot2(night_bouts); title('Sleep Bout Length - Night', 'FontWeight', 'bold');
-hold on; line([0 num_genos+5], [night_bout_avg night_bout_avg], 'Color', 'k');
-line([0 num_genos+5], [night_bout_avg+night_bout_std night_bout_avg+night_bout_std], 'Color', [0.5 0.5 0.5]); 
-line([0 num_genos+5], [night_bout_avg-night_bout_std night_bout_avg-night_bout_std], 'Color', [0.5 0.5 0.5]);
+hold on; 
+er1 = line([0 num_genos+5], [night_bout_avg night_bout_avg], 'Color', 'k');
+er2 = line([0 num_genos+5], [night_bout_avg+night_bout_std night_bout_avg+night_bout_std], 'Color', [0.5 0.5 0.5]); 
+er3 = line([0 num_genos+5], [night_bout_avg-night_bout_std night_bout_avg-night_bout_std], 'Color', [0.5 0.5 0.5]);
+uistack([er1, er2, er3], 'bottom');
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
@@ -142,9 +167,11 @@ night_act_std = nanstd(nanmean(night_activity));
 
 % Make graphs
 notBoxPlot2(day_activity); title('Day Activity', 'FontWeight', 'bold');
-hold on; line([0 num_genos+5], [day_act_avg day_act_avg], 'Color', 'k');
-line([0 num_genos+5], [day_act_avg+day_act_std day_act_avg+day_act_std], 'Color', [0.5 0.5 0.5]); 
-line([0 num_genos+5], [day_act_avg-day_act_std day_act_avg-day_act_std], 'Color', [0.5 0.5 0.5]);
+hold on; 
+er1 = line([0 num_genos+5], [day_act_avg day_act_avg], 'Color', 'k');
+er2 = line([0 num_genos+5], [day_act_avg+day_act_std day_act_avg+day_act_std], 'Color', [0.5 0.5 0.5]); 
+er3 = line([0 num_genos+5], [day_act_avg-day_act_std day_act_avg-day_act_std], 'Color', [0.5 0.5 0.5]);
+uistack([er1, er2, er3], 'bottom');
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Beam crossings/waking minute');
@@ -153,12 +180,18 @@ savefig(gcf, fullfile(sleep_path, [tag,'Day-Activity.fig']));
 saveas(gcf, fullfile(sleep_path, [tag,'Day-Activity.pdf']));
 
 notBoxPlot2(night_activity); title('Night Activity', 'FontWeight', 'bold');
-hold on; line([0 num_genos+5], [night_act_avg night_act_avg], 'Color', 'k');
-line([0 num_genos+5], [night_act_avg+night_act_std night_act_avg+night_act_std], 'Color', [0.5 0.5 0.5]); 
-line([0 num_genos+5], [night_act_avg-night_act_std night_act_avg-night_act_std], 'Color', [0.5 0.5 0.5]); 
+hold on; 
+er1 = line([0 num_genos+5], [night_act_avg night_act_avg], 'Color', 'k');
+er2 = line([0 num_genos+5], [night_act_avg+night_act_std night_act_avg+night_act_std], 'Color', [0.5 0.5 0.5]); 
+er3 = line([0 num_genos+5], [night_act_avg-night_act_std night_act_avg-night_act_std], 'Color', [0.5 0.5 0.5]);
+uistack([er1, er2, er3], 'bottom');
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Beam crossings/waking minute');
 rotateticklabel(gca,45);
-savefig(gcf, fullfile(sleep_path, [tag,'Night-Activity.fig']));
-saveas(gcf, fullfile(sleep_path, [tag,'Night-Activity.pdf']));
+set(gcf,'PaperOrientation','landscape');
+set(gcf,'PaperUnits','normalized');
+print(gcf, '-dpdf', fullfile(sleep_path, [tag,'Night-Activity.pdf']));
+
+
+hold off

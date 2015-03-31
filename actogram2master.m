@@ -268,6 +268,7 @@ for j = 1:rainbowgroups_n
     end
     
     % Create the rainbox plots
+    figure('Color', [1 1 1 ]);
     mseb(1:48,rainbow_mat',rainbow_mat_sem');
     axis([1,49,0,30])
     set(gca,'XTick',1:8:49)
@@ -342,3 +343,6 @@ ylabel('Power')
 title('{\bf Periodogram}')
 %}
 
+%% Make graphs of sleep data
+
+makeSleepGraphs
