@@ -18,11 +18,16 @@ export_path = export_path(strfind(export_path, ',')+1:end);
 PC_or_not = settings_file{3};
 PC_or_not = PC_or_not(strfind(PC_or_not, ',')+1:end)=='Y';
 
-[filename_master, pathname]  =  uigetfile(monitor_dir); % This address should be changed according to the user
+[filename_master, pathname]  =  uigetfile(fullfile(monitor_dir, '*.xlsx'));
 
 %% Processing the parameter files
 % Load the parameter file in to RAM
 master_direction = importdata(fullfile(pathname,filename_master));
+
+% Convert channel indices to nums
+for i = 3:length(master_direction.textdata)
+master_direction.textdata{i,3} = str2num(master_direction.textdata{i,3});
+end
 
 % Read the start and end dates from the parameter file
 start_date = master_direction.textdata{1,1};
@@ -53,7 +58,7 @@ for i = 1:n_genos
     
     % Determine which rainbow group the current genotype is in (ignore NaN and use the max group value
     % if multiple group numbers were entered (don't do it!))
-    master_data_struct(i).rainbowgroup = nanmax(master_direction.data(temp_rows_of_geno,2));   
+    master_data_struct(i).rainbowgroup = nanmax(master_direction.data(temp_rows_of_geno,1));   
 end
 
 % Determine how many lines to read from the parameter file. Each genotype

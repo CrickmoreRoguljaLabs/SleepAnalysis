@@ -266,7 +266,7 @@ for i=1:32
     end
 end
 
-% Output the sleep bout numbers, lengths and activities to xls (the function csvwrite does not work very well for S. M shoud try it.)
+% Output the sleep bout numbers, lengths and activities to xls
 % disp('Sleep bout numbers:')
 sleep_bout_num=sleep_bout_num';
 avg_sleep_bout_num=zeros(32,3);
@@ -319,8 +319,7 @@ end
 
 %% Consolidating data to the master data file
 if master_mode==1
-    % Start from the first channel (i.e. first fly tube)
-    current_channel=1;
+    % Start with the first genotype in the monitor
     for jj=1:n_genos_of_current_monitor
         % Read the current genotype
         current_geno=master_direction.textdata{ii+jj-1,2};
@@ -329,40 +328,38 @@ if master_mode==1
         current_geno_index=find(strcmp(genos,current_geno));
         
         % Find the number of flies with the current genotype
-        n_channels_of_current_geno=master_direction.data(ii+jj-3,1);
+        channels_of_current_geno=master_direction.textdata{ii+jj-1,3};
         
         % Calculate the number of dead flies
-        n_dead_flies=sum(dead_fly_vector(current_channel:current_channel+n_channels_of_current_geno-1));
+        n_dead_flies=sum(dead_fly_vector(channels_of_current_geno));
         
         % Write the actogram data to the master structure
-        master_data_struct(current_geno_index).data=[master_data_struct(current_geno_index).data,binned_data(:,current_channel:current_channel+n_channels_of_current_geno-1)];
+        master_data_struct(current_geno_index).data=[master_data_struct(current_geno_index).data,binned_data(:,channels_of_current_geno)];
         
         % Write the sleep lengths to the mastere structure
-        master_data_struct(current_geno_index).sleep=[master_data_struct(current_geno_index).sleep;avg_sleep_results(current_channel:current_channel+n_channels_of_current_geno-1,:)];
+        master_data_struct(current_geno_index).sleep=[master_data_struct(current_geno_index).sleep;avg_sleep_results(channels_of_current_geno,:)];
         
         % Write the sleep bout lengths to te master structure
-        master_data_struct(current_geno_index).sleep_bout_lengths=[master_data_struct(current_geno_index).sleep_bout_lengths;avg_sleep_bout_length(current_channel:current_channel+n_channels_of_current_geno-1,:)];
+        master_data_struct(current_geno_index).sleep_bout_lengths=[master_data_struct(current_geno_index).sleep_bout_lengths;avg_sleep_bout_length(channels_of_current_geno,:)];
         
         % Write the sleep bout numbers to the master structure
-        master_data_struct(current_geno_index).sleep_bout_numbers=[master_data_struct(current_geno_index).sleep_bout_numbers;avg_sleep_bout_num(current_channel:current_channel+n_channels_of_current_geno-1,:)];
+        master_data_struct(current_geno_index).sleep_bout_numbers=[master_data_struct(current_geno_index).sleep_bout_numbers;avg_sleep_bout_num(channels_of_current_geno,:)];
         
         % Write the activities to the master structure
-        master_data_struct(current_geno_index).activities=[master_data_struct(current_geno_index).activities;avg_activity_mat(current_channel:current_channel+n_channels_of_current_geno-1,:)];
+        master_data_struct(current_geno_index).activities=[master_data_struct(current_geno_index).activities;avg_activity_mat(channels_of_current_geno,:)];
         
         % Write the delays to the master structure
-        master_data_struct(current_geno_index).delays=[master_data_struct(current_geno_index).delays;avg_delay_mat(current_channel:current_channel+n_channels_of_current_geno-1,:)];
+        master_data_struct(current_geno_index).delays=[master_data_struct(current_geno_index).delays;avg_delay_mat(channels_of_current_geno,:)];
         
         % Add the number of alive flies in the master structure
-        master_data_struct(current_geno_index).num_alive_flies=master_data_struct(current_geno_index).num_alive_flies+n_channels_of_current_geno-n_dead_flies;
+        master_data_struct(current_geno_index).num_alive_flies=master_data_struct(current_geno_index).num_alive_flies+length(channels_of_current_geno)-n_dead_flies;
         
         % Write the dead fly indices to the master structure
-        master_data_struct(current_geno_index).alive_fly_indices=[master_data_struct(current_geno_index).alive_fly_indices;~dead_fly_vector(current_channel:current_channel+n_channels_of_current_geno-1)==1];
+        master_data_struct(current_geno_index).alive_fly_indices=[master_data_struct(current_geno_index).alive_fly_indices;~dead_fly_vector(channels_of_current_geno)==1];
         
         % Write the number of processed flies to the master structure
-        master_data_struct(current_geno_index).num_processed_flies=master_data_struct(current_geno_index).num_processed_flies+n_channels_of_current_geno;
-        
-        % Determine the next channel
-        current_channel=current_channel+n_channels_of_current_geno;
+        master_data_struct(current_geno_index).num_processed_flies=master_data_struct(current_geno_index).num_processed_flies+length(channels_of_current_geno);
+
     end
 
     
