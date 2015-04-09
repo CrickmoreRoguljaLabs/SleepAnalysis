@@ -43,7 +43,6 @@ ylabel('sleep per 30 min (min)')
 set(gcf,'Color',[1,1,1])
 
 % Get rid of that silly box
-hold on
 set(gca, 'box', 'off');
 
 % Save the fig and the data

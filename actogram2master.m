@@ -248,7 +248,7 @@ for j = 1:rainbowgroups_n
     rainbow_mat_tape = zeros(size(master_data_struct(1).data,1)/6,n_geno_of_the_current_rainbowgroup);
     rainbow_mat_sem_tape = zeros(size(master_data_struct(1).data,1)/6,n_geno_of_the_current_rainbowgroup);
     
-    % Prime the output rainbow cell
+    % Prime the output rainbow cells
     rainbow_cell = cell(98,n_geno_of_the_current_rainbowgroup);
         
     for i = 1:n_geno_of_the_current_rainbowgroup
@@ -273,15 +273,17 @@ for j = 1:rainbowgroups_n
         % 30 min bins - both mean and SEM
         temp_average_sleep_per_30_min_tape = sum(reshape(temp_average_sleep_per_5_min_tape,6,[]))';
         temp_sem_sleep_per_30_min_tape = sqrt(sum(reshape(temp_std_sleep_per_5_min_tape,6,[]).^2)')...
-            /sqrt(master_data_struct(geno_indices_of_the_current_rainbowgroup(i)).num_alive_flies);
+            /sqrt(master_data_struct(current_rainbow_geno).num_alive_flies);
         temp_average_sleep_per_30_min = sum(reshape(temp_average_sleep_per_5_min,6,[]))';
         temp_sem_sleep_per_30_min  =  sqrt(sum(reshape(temp_std_sleep_per_5_min,6,[]).^2)')...
-            /sqrt(master_data_struct(geno_indices_of_the_current_rainbowgroup(i)).num_alive_flies);
+            /sqrt(master_data_struct(current_rainbow_geno).num_alive_flies);
         
-        rainbow_cell{1,i} = genos{geno_indices_of_the_current_rainbowgroup(i)};
-        rainbow_cell{2,i} = master_data_struct(geno_indices_of_the_current_rainbowgroup(i)).num_alive_flies;
+        % Construct rainbow data cell
+        rainbow_cell{1,i} = genos{current_rainbow_geno};
+        rainbow_cell{2,i} = master_data_struct(current_rainbow_geno).num_alive_flies;
         rainbow_cell(3:50,i) = num2cell(temp_average_sleep_per_30_min);
         rainbow_cell(51:98,i) = num2cell(temp_sem_sleep_per_30_min);
+        
         % Put the data in the rainbow matrices
         rainbow_mat(:,i) = temp_average_sleep_per_30_min;
         rainbow_mat_sem(:,i) = temp_sem_sleep_per_30_min;
@@ -342,7 +344,6 @@ for j = 1:rainbowgroups_n
             set(gcf,'Color',[1,1,1])
             
             % Get rid of that silly box
-            hold on
             set(gca, 'box', 'off');
           
         end
