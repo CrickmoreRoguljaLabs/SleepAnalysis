@@ -5,7 +5,7 @@
 %% Extract general info
 
 % Determine whether to open a file from memory or use data in the workspace
-if exist('master_data_struct')
+if exist('master_data_struct','var')
     
     % Create tag for saving figures
     tag = [filename_master(1:end-5),'_'];
