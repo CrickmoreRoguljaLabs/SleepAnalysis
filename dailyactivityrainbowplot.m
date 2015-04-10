@@ -1,5 +1,6 @@
 function [ flag ] = dailyactivityrainbowplot( ~ )
-%DAILYRAINBOWPLOT Creates a daily rainbow plot using the input data
+%DAILYACTIVITYRAINBOWPLOT, aka bryanplot, plots the average beamcrossing per minute
+%in 30-min bins over the time course of the expteriment.
 %   No input variable
 
 %Read the setting file
@@ -79,7 +80,7 @@ while panels2print > 0
         rainbow_tape_xlabel_cell = {'8','12','16','20','24','4','8'};
         set(gca,'XTickLabel',rainbow_tape_xlabel_cell)
         if k==n_days
-            legend(genos,'Location', 'SouthEast')
+            legend(genos(genos2analyze),'Location', 'SouthEast')
             legend boxoff
         end
         xlabel('Time')
