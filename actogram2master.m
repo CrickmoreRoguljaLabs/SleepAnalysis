@@ -51,7 +51,7 @@ n_genos = size(genos,1);
 master_data_struct = struct('genotype','','rainbowgroup',[],....
     'num_alive_flies',0,'num_processed_flies',0,'alive_fly_indices',[],...
     'data',[],'sleep',[],'sleep_bout_lengths',[],'sleep_bout_numbers',[],...
-    'activities',[],'delays',[]);
+    'activities',[],'delays',[], 'periodcity',[]);
 master_data_struct(1:n_genos,1) = master_data_struct;
 
 % Label the genotypes and rainbow indices on the master data structure
@@ -104,13 +104,22 @@ while ii<= master_lines_to_read
 end
 close(h)
 
+%% Calculate periodicity
+for ii = 1 : n_genos
+    % Use the CircadianFT function to calculate the periodicity of the
+    % animals
+    master_data_struct(ii).periodicity = CircadianFT(master_data_struct(ii).data...
+        (:,master_data_struct(ii).alive_fly_indices), 0);
+end
+
+
 %% Output files: average sleep data
 % Prime the cell to write data in
-average_output_cell = cell(n_genos+1,16);
+average_output_cell = cell(n_genos+1,17);
 average_output_cell(1,:) = {'geno','# loaded','# alive','total sleep','day sleep',...
     'night sleep','day bout length','night bout length','total bout length',...
     'day bout number','night bout number','total bout number',...
-    'day activity','night activity','total activity','delays'};
+    'day activity','night activity','total activity','delays','periodicity'};
 
 for ii = 1:n_genos
     % First column shows the genotypes
@@ -160,6 +169,9 @@ for ii = 1:n_genos
     
     % Sixteenth column shows average night-time delay per genotype
     average_output_cell{ii+1,16} = nanmean(master_data_struct(ii).delays);
+    
+    % Seventeenth column shows population periodicity per genotype
+    average_output_cell{ii+1,17} = master_data_struct(ii).periodicity;
     
 end
 
@@ -357,27 +369,6 @@ for j = 1:rainbowgroups_n
         close(102)
     end
 end
-
-%% Periodicity (testing)
-%{
-test = master_data_struct(4).data;
-test2 = mean(test,2);
-x = test2;
-fs  =  12;                % Sample frequency (bin/hour)
-m  =  length(x);          % Window length
-n  =  pow2(nextpow2(m));  % Transform length
-y  =  fft(x,n);           % DFT
-f  =  (0:n-1)*(fs/n);     % Frequency range
-power  =  y.*conj(y)/n;   % Power of the DFT
-plot(1./f(5:n/2),power(5:n/2))
-ylim = get(gca,'YLim');
-hold on
-plot([12 12],ylim,'r')
-hold off
-xlabel('Period (hour)')
-ylabel('Power')
-title('{\bf Periodogram}')
-%}
 
 %% Make graphs of sleep data
 
