@@ -41,9 +41,8 @@ end
 % Find the peak of the power spectrum
 [~ , maxind] = max(abs(circadian(1:NFFT/2)));
 
-% Output cycle in terms of hours/cycle. Multiply by 2 so that 12 hour
-% activity cycle correspond to 24 hour circadian cycle.
-cycle = 1 / (F(maxind)* 60 * 60) * 2;
+% Output cycle in terms of hours/cycle. 
+cycle = 1 / (F(maxind)* 60 * 60);
 
 
 end
