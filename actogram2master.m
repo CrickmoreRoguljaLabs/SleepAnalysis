@@ -1,17 +1,6 @@
 % This file enables batch processing monitor files and organize data based
 % on genotypes.
 
-%% Color setting
-% We shouldn't be changing the users' MATLAB global default settings just
-% for the ease of the coding. I am moving these codes to later parts where
-% individual plots are made. These lines will be removed in a future
-% update.
-
-% make that shit pretty
-% set(0,'DefaultFigureColormap',cbrewer('seq','PuBuGn',9));
-% set(0,'DefaultAxesColorOrder',cbrewer('qual','Set2',8))
-% set(0,'DefaultLineLineWidth',1.2)
-
 %% Initiation
 
 % Label batch processing and read the batch processing parameter file 
@@ -51,7 +40,16 @@ n_genos = size(genos,1);
 master_data_struct = struct('genotype','','rainbowgroup',[],....
     'num_alive_flies',0,'num_processed_flies',0,'alive_fly_indices',[],...
     'data',[],'sleep',[],'sleep_bout_lengths',[],'sleep_bout_numbers',[],...
-    'activities',[],'delays',[], 'periodcity',[]);
+    'activities',[],'delays',[]);
+
+%{
+%>>>>>>>>>>> PERIODICITY CALCULATIONS
+master_data_struct = struct('genotype','','rainbowgroup',[],....
+    'num_alive_flies',0,'num_processed_flies',0,'alive_fly_indices',[],...
+    'data',[],'sleep',[],'sleep_bout_lengths',[],'sleep_bout_numbers',[],...
+    'activities',[],'delays',[], 'periodicity',[]);
+%}
+
 master_data_struct(1:n_genos,1) = master_data_struct;
 
 % Label the genotypes and rainbow indices on the master data structure
@@ -105,21 +103,35 @@ end
 close(h)
 
 %% Calculate periodicity
+%{
+%>>>>>>>>>>> PERIODICITY CALCULATIONS
 for ii = 1 : n_genos
     % Use the CircadianFT function to calculate the periodicity of the
     % animals
     master_data_struct(ii).periodicity = CircadianFT(master_data_struct(ii).data...
         (:,master_data_struct(ii).alive_fly_indices), 0);
 end
-
+%}
 
 %% Output files: average sleep data
 % Prime the cell to write data in
+
+average_output_cell = cell(n_genos+1,16);
+
+average_output_cell(1,:) = {'geno','# loaded','# alive','total sleep','day sleep',...
+    'night sleep','day bout length','night bout length','total bout length',...
+    'day bout number','night bout number','total bout number',...
+    'day activity','night activity','total activity','delays'};
+
+%{
+%>>>>>>>>>>> PERIODICITY CALCULATIONS
 average_output_cell = cell(n_genos+1,17);
+
 average_output_cell(1,:) = {'geno','# loaded','# alive','total sleep','day sleep',...
     'night sleep','day bout length','night bout length','total bout length',...
     'day bout number','night bout number','total bout number',...
     'day activity','night activity','total activity','delays','periodicity'};
+%}
 
 for ii = 1:n_genos
     % First column shows the genotypes
@@ -170,11 +182,13 @@ for ii = 1:n_genos
     % Sixteenth column shows average night-time delay per genotype
     average_output_cell{ii+1,16} = nanmean(master_data_struct(ii).delays);
     
+    %{
+    %>>>>>>>>>>> PERIODICITY CALCULATIONS
     % Seventeenth column shows population periodicity per genotype
     average_output_cell{ii+1,17} = master_data_struct(ii).periodicity;
+    %}
     
 end
-
 
 % Write the cell data
 cell2csv(fullfile(export_path,[filename_master(1:end-5),'_average_sleep_data.csv']),average_output_cell);

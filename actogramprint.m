@@ -1,6 +1,4 @@
 function [  ] = actogramprint( data2print, time_bounds, mat_bounds , n_days, export_path, filename, title_name, PC_or_not)
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
 % The plot will be in 2 x 4 format
 subplot_plan=[2,4];
 panels_per_page=subplot_plan(1)*subplot_plan(2);

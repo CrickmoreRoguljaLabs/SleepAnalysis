@@ -71,6 +71,7 @@ set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
 rotateticklabel(gca,45);
+set(gcf, 'Position', [100 100 1000 600]);
 savefig(gcf, fullfile(sleep_path, [tag,'Day-Sleep.fig']));
 saveas(gcf, fullfile(sleep_path, [tag,'Day-Sleep.pdf']));
 
@@ -85,6 +86,7 @@ set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
 rotateticklabel(gca,45);
+set(gcf, 'Position', [100 100 1000 600]);
 savefig(gcf, fullfile(sleep_path, [tag,'Night-Sleep.fig']));
 saveas(gcf, fullfile(sleep_path, [tag,'Night-Sleep.pdf']));
 
@@ -100,6 +102,7 @@ set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
 rotateticklabel(gca,45);
+set(gcf, 'Position', [100 100 1000 600]);
 savefig(gcf, fullfile(sleep_path, [tag,'Total-Sleep.fig']));
 saveas(gcf, fullfile(sleep_path, [tag,'Total-Sleep.pdf']));
 
@@ -137,6 +140,7 @@ set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
 rotateticklabel(gca,45);
+set(gcf, 'Position', [100 100 1000 600]);
 savefig(gcf, fullfile(sleep_path, [tag,'Day-Bout-Length.fig']));
 saveas(gcf, fullfile(sleep_path, [tag,'Day-Bout-Length.pdf']));
 
@@ -152,6 +156,7 @@ set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
 rotateticklabel(gca,45);
+set(gcf, 'Position', [100 100 1000 600]);
 savefig(gcf, fullfile(sleep_path, [tag,'Night-Bout-Length.fig']));
 saveas(gcf, fullfile(sleep_path, [tag,'Night-Bout-Length.pdf']));
 
@@ -188,6 +193,7 @@ set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Beam crossings/waking minute');
 rotateticklabel(gca,45);
+set(gcf, 'Position', [100 100 1000 600]);
 savefig(gcf, fullfile(sleep_path, [tag,'Day-Activity.fig']));
 saveas(gcf, fullfile(sleep_path, [tag,'Day-Activity.pdf']));
 
@@ -203,6 +209,7 @@ set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Beam crossings/waking minute');
 rotateticklabel(gca,45);
+set(gcf, 'Position', [100 100 1000 600]);
 set(gcf,'PaperOrientation','landscape');
 set(gcf,'PaperUnits','normalized');
 print(gcf, '-dpdf', fullfile(sleep_path, [tag,'Night-Activity.pdf']));
