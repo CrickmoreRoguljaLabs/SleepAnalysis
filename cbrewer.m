@@ -14,7 +14,7 @@ function [colormap]=cbrewer(ctype, cname, ncol, interp_method)
 %   - ncol:  number of color in the table. It changes according to ctype and
 %            cname
 %   - interp_method: if the table need to be interpolated, what method
-%                    should be used for interp1? Default='cubic'.
+%                    should be used for interp1? Default='pchip'.
 % 
 % A note on the number of colors: Based on the original data, there is
 % only a certain number of colors available for each type and name of
@@ -44,7 +44,7 @@ load('colorbrewer.mat')
 % initialise the colormap is there are any problems
 colormap=[];
 if (~exist('interp_method', 'var'))
-    interp_method='cubic';
+    interp_method='PCHIP';
 end
 
 % If no arguments
