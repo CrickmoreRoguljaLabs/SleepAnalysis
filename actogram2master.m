@@ -1,10 +1,16 @@
 % This file enables batch processing monitor files and organize data based
 % on genotypes.
 
+%% Color setting
+% We shouldn't be changing the users' MATLAB global default settings just
+% for the ease of the coding. I am moving these codes to later parts where
+% individual plots are made. These lines will be removed in a future
+% update.
+
 % make that shit pretty
-set(0,'DefaultFigureColormap',cbrewer('seq','PuBuGn',9));
-set(0,'DefaultAxesColorOrder',cbrewer('qual','Set2',8))
-set(0,'DefaultLineLineWidth',1.2)
+% set(0,'DefaultFigureColormap',cbrewer('seq','PuBuGn',9));
+% set(0,'DefaultAxesColorOrder',cbrewer('qual','Set2',8))
+% set(0,'DefaultLineLineWidth',1.2)
 
 %% Initiation
 
@@ -26,7 +32,7 @@ master_direction = importdata(fullfile(pathname,filename_master));
 
 % Convert channel indices to nums
 for i = 3:length(master_direction.textdata)
-master_direction.textdata{i,3} = str2num(master_direction.textdata{i,3});
+master_direction.textdata{i,3} = str2num(master_direction.textdata{i,3}); %#ok<ST2NM>
 end
 
 % Read the start and end dates from the parameter file
@@ -42,7 +48,10 @@ genos = unique(genos,'stable');
 n_genos = size(genos,1);
 
 % Construct the master data file (in the structure form)
-master_data_struct = struct('genotype','','rainbowgroup',[],'num_alive_flies',0,'num_processed_flies',0,'alive_fly_indices',[],'data',[],'sleep',[],'sleep_bout_lengths',[],'sleep_bout_numbers',[],'activities',[],'delays',[]);
+master_data_struct = struct('genotype','','rainbowgroup',[],....
+    'num_alive_flies',0,'num_processed_flies',0,'alive_fly_indices',[],...
+    'data',[],'sleep',[],'sleep_bout_lengths',[],'sleep_bout_numbers',[],...
+    'activities',[],'delays',[], 'periodcity',[]);
 master_data_struct(1:n_genos,1) = master_data_struct;
 
 % Label the genotypes and rainbow indices on the master data structure
@@ -95,13 +104,22 @@ while ii<= master_lines_to_read
 end
 close(h)
 
+%% Calculate periodicity
+for ii = 1 : n_genos
+    % Use the CircadianFT function to calculate the periodicity of the
+    % animals
+    master_data_struct(ii).periodicity = CircadianFT(master_data_struct(ii).data...
+        (:,master_data_struct(ii).alive_fly_indices), 0);
+end
+
+
 %% Output files: average sleep data
 % Prime the cell to write data in
-average_output_cell = cell(n_genos+1,16);
+average_output_cell = cell(n_genos+1,17);
 average_output_cell(1,:) = {'geno','# loaded','# alive','total sleep','day sleep',...
     'night sleep','day bout length','night bout length','total bout length',...
     'day bout number','night bout number','total bout number',...
-    'day activity','night activity','total activity','delays'};
+    'day activity','night activity','total activity','delays','periodicity'};
 
 for ii = 1:n_genos
     % First column shows the genotypes
@@ -151,6 +169,9 @@ for ii = 1:n_genos
     
     % Sixteenth column shows average night-time delay per genotype
     average_output_cell{ii+1,16} = nanmean(master_data_struct(ii).delays);
+    
+    % Seventeenth column shows population periodicity per genotype
+    average_output_cell{ii+1,17} = master_data_struct(ii).periodicity;
     
 end
 
@@ -239,27 +260,42 @@ for j = 1:rainbowgroups_n
     rainbow_mat_tape = zeros(size(master_data_struct(1).data,1)/6,n_geno_of_the_current_rainbowgroup);
     rainbow_mat_sem_tape = zeros(size(master_data_struct(1).data,1)/6,n_geno_of_the_current_rainbowgroup);
     
-    % Prime the output rainbow cell
+    % Prime the output rainbow cells
     rainbow_cell = cell(98,n_geno_of_the_current_rainbowgroup);
         
     for i = 1:n_geno_of_the_current_rainbowgroup
         % Calculate the average and std/sem sleep per 5 min and 30 min of one genotype
         % Also calculate the day-by-day rainbow data (tape, inspired by the Turing machine)
         % (Ignoring dead flies)
-        temp_average_sleep_per_5_min_tape = mean(master_data_struct(geno_indices_of_the_current_rainbowgroup(i)).data(:,master_data_struct(geno_indices_of_the_current_rainbowgroup(i)).alive_fly_indices>0) == 0,2)*5;
-        temp_std_sleep_per_5_min_tape = std((master_data_struct(geno_indices_of_the_current_rainbowgroup(i)).data(:,master_data_struct(geno_indices_of_the_current_rainbowgroup(i)).alive_fly_indices>0) == 0)*5,1,2);
-        temp_average_sleep_per_5_min = mean(reshape(master_data_struct(geno_indices_of_the_current_rainbowgroup(i)).data(:,master_data_struct(geno_indices_of_the_current_rainbowgroup(i)).alive_fly_indices>0) == 0,288,[]),2)*5;
-        temp_std_sleep_per_5_min = std(reshape(master_data_struct(geno_indices_of_the_current_rainbowgroup(i)).data(:,master_data_struct(geno_indices_of_the_current_rainbowgroup(i)).alive_fly_indices>0) == 0,288,[])*5,1,2);
         
+        % Variables requested by people
+        current_rainbow_geno = geno_indices_of_the_current_rainbowgroup(i);
+        current_rainbow_alive_flies = master_data_struct(current_rainbow_geno).alive_fly_indices>0;
+        
+        % 5 min bins - both mean and SEM
+        temp_average_sleep_per_5_min_tape = mean(master_data_struct(current_rainbow_geno).data...
+            (:,current_rainbow_alive_flies) == 0,2)*5;
+        temp_std_sleep_per_5_min_tape = std((master_data_struct(current_rainbow_geno).data...
+            (:,current_rainbow_alive_flies) == 0)*5,1,2);
+        temp_average_sleep_per_5_min = mean(reshape(master_data_struct(current_rainbow_geno).data...
+            (:,current_rainbow_alive_flies) == 0,288,[]),2)*5;
+        temp_std_sleep_per_5_min = std(reshape(master_data_struct(current_rainbow_geno).data...
+            (:,current_rainbow_alive_flies) == 0,288,[])*5,1,2);
+        
+        % 30 min bins - both mean and SEM
         temp_average_sleep_per_30_min_tape = sum(reshape(temp_average_sleep_per_5_min_tape,6,[]))';
-        temp_sem_sleep_per_30_min_tape = sqrt(sum(reshape(temp_std_sleep_per_5_min_tape,6,[]).^2)')/sqrt(master_data_struct(geno_indices_of_the_current_rainbowgroup(i)).num_alive_flies);
+        temp_sem_sleep_per_30_min_tape = sqrt(sum(reshape(temp_std_sleep_per_5_min_tape,6,[]).^2)')...
+            /sqrt(master_data_struct(current_rainbow_geno).num_alive_flies);
         temp_average_sleep_per_30_min = sum(reshape(temp_average_sleep_per_5_min,6,[]))';
-        temp_sem_sleep_per_30_min  =  sqrt(sum(reshape(temp_std_sleep_per_5_min,6,[]).^2)')/sqrt(master_data_struct(geno_indices_of_the_current_rainbowgroup(i)).num_alive_flies);
+        temp_sem_sleep_per_30_min  =  sqrt(sum(reshape(temp_std_sleep_per_5_min,6,[]).^2)')...
+            /sqrt(master_data_struct(current_rainbow_geno).num_alive_flies);
         
-        rainbow_cell{1,i} = genos{geno_indices_of_the_current_rainbowgroup(i)};
-        rainbow_cell{2,i} = master_data_struct(geno_indices_of_the_current_rainbowgroup(i)).num_alive_flies;
+        % Construct rainbow data cell
+        rainbow_cell{1,i} = genos{current_rainbow_geno};
+        rainbow_cell{2,i} = master_data_struct(current_rainbow_geno).num_alive_flies;
         rainbow_cell(3:50,i) = num2cell(temp_average_sleep_per_30_min);
         rainbow_cell(51:98,i) = num2cell(temp_sem_sleep_per_30_min);
+        
         % Put the data in the rainbow matrices
         rainbow_mat(:,i) = temp_average_sleep_per_30_min;
         rainbow_mat_sem(:,i) = temp_sem_sleep_per_30_min;
@@ -269,6 +305,13 @@ for j = 1:rainbowgroups_n
     
     % Create the rainbox plots
     figure('Color', [1 1 1 ]);
+    
+    % setting the color scheme of the rainbow plot
+    set(gcf,'Colormap',cbrewer('seq','PuBuGn',9));
+    set(gcf,'DefaultAxesColorOrder',cbrewer('qual','Set2',8))
+    set(gcf,'DefaultLineLineWidth',1.2)
+    
+    % Plotting
     mseb(1:48,rainbow_mat',rainbow_mat_sem');
     axis([1,49,0,30])
     set(gca,'XTick',1:8:49)
@@ -290,6 +333,12 @@ for j = 1:rainbowgroups_n
     while panels2print > 0
         figure(102)
         set(102,'Position',plotsizevec);
+        
+        % setting the color scheme of the rainbow plot
+        set(gcf,'Colormap',cbrewer('seq','PuBuGn',9));
+        set(gcf,'DefaultAxesColorOrder',cbrewer('qual','Set2',8))
+        set(gcf,'DefaultLineLineWidth',1.2)
+        
         for k=1:n_days
             subplot(3,3,k)
             mseb(1:48,rainbow_mat_tape((k-1)*48+1:(k-1)*48+48,:)',rainbow_mat_sem_tape((k-1)*48+1:(k-1)*48+48,:)');
@@ -307,7 +356,6 @@ for j = 1:rainbowgroups_n
             set(gcf,'Color',[1,1,1])
             
             % Get rid of that silly box
-            hold on
             set(gca, 'box', 'off');
           
         end
@@ -321,27 +369,6 @@ for j = 1:rainbowgroups_n
         close(102)
     end
 end
-
-%% Periodicity (testing)
-%{
-test = master_data_struct(4).data;
-test2 = mean(test,2);
-x = test2;
-fs  =  12;                % Sample frequency (bin/hour)
-m  =  length(x);          % Window length
-n  =  pow2(nextpow2(m));  % Transform length
-y  =  fft(x,n);           % DFT
-f  =  (0:n-1)*(fs/n);     % Frequency range
-power  =  y.*conj(y)/n;   % Power of the DFT
-plot(1./f(5:n/2),power(5:n/2))
-ylim = get(gca,'YLim');
-hold on
-plot([12 12],ylim,'r')
-hold off
-xlabel('Period (hour)')
-ylabel('Power')
-title('{\bf Periodogram}')
-%}
 
 %% Make graphs of sleep data
 

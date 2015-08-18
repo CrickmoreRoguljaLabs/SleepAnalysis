@@ -91,12 +91,12 @@ if (~isfield(colorbrewer.(ctype),cname))
 end
 
 if (ncol>length(colorbrewer.(ctype).(cname)))
-    disp(' ')
-    disp('----------------------------------------------------------------------')
-    disp(['The maximum number of colors for table *' cname '* is ' num2str(length(colorbrewer.(ctype).(cname)))])
-    disp(['The new colormap will be extrapolated from these ' num2str(length(colorbrewer.(ctype).(cname))) ' values'])
-    disp('----------------------------------------------------------------------')
-    disp(' ')
+%     disp(' ')
+%     disp('----------------------------------------------------------------------')
+%     disp(['The maximum number of colors for table *' cname '* is ' num2str(length(colorbrewer.(ctype).(cname)))])
+%     disp(['The new colormap will be extrapolated from these ' num2str(length(colorbrewer.(ctype).(cname))) ' values'])
+%     disp('----------------------------------------------------------------------')
+%     disp(' ')
     cbrew_init=colorbrewer.(ctype).(cname){length(colorbrewer.(ctype).(cname))};
     colormap=interpolate_cbrewer(cbrew_init, interp_method, ncol);
     colormap=colormap./255;
@@ -108,12 +108,12 @@ if (isempty(colorbrewer.(ctype).(cname){ncol}))
     while(isempty(colorbrewer.(ctype).(cname){ncol}))
         ncol=ncol+1;
     end        
-    disp(' ')
-    disp('----------------------------------------------------------------------')
-    disp(['The minimum number of colors for table *' cname '* is ' num2str(ncol)])
-    disp('This minimum value shall be defined as ncol instead')
-    disp('----------------------------------------------------------------------')
-    disp(' ')
+%     disp(' ')
+%     disp('----------------------------------------------------------------------')
+%     disp(['The minimum number of colors for table *' cname '* is ' num2str(ncol)])
+%     disp('This minimum value shall be defined as ncol instead')
+%     disp('----------------------------------------------------------------------')
+%     disp(' ')
 end
 
 colormap=(colorbrewer.(ctype).(cname){ncol})./255;
