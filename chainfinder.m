@@ -4,7 +4,7 @@ function [ chainmat ] = chainfinder( inputvec )
 %   inputvec: a vector of data to find chains within
 %
 %   Output:
-%   chainmat: a n-by-2 matrix to report the chains found. Each row is a 
+%   chainmat: an n-by-2 matrix to report the chains found. Each row is a 
 %             chain. The first column tells where each chain starts. The
 %             second column tells the lengths of the chains.
 
