@@ -1,12 +1,16 @@
 function sleepextract
 %sleepextract uses gui to determine which data to extract and extracts it
-%from the workspace file. Written by Stephen Zhang, Dec 2014.
+%from the workspace file. Written by Stephen Zhang, Dec 2014. Reworked to
+%support the moving-average sleep analysis on 5/9/2016.
+% This program currently assumes the sleep data are collected in 1-min bins.
 
-
-%Read the setting file
+% Read the setting file
 settings_file = importdata('actogram2_settings.csv');
 export_path = settings_file{2};
 export_path = export_path(strfind(export_path, ',')+1:end);
+
+% Hard code the interval as 1 min for now
+interval = 1;
 
 % Use UI to get the expt .mat files
 [filename_expt,extractpath] = uigetfile([export_path,'\*.mat'],'Experimental file');
@@ -15,10 +19,11 @@ export_path = export_path(strfind(export_path, ',')+1:end);
 % 'master_data_struct' and 'genos' are currently used for now. Loaded
 % others for the purpose of future expansions.
 load(fullfile(extractpath,filename_expt),'master_data_struct',...
-    'start_date','end_date','genos','n_genos','n_days','filename_master');
+    'start_date','end_date','genos','n_genos','n_sleep_bounds','filename_master');
 
 % Which kinds of data types can be extracted right now
-datatypes = {'activity data (5 min)','sleep data (5 min)',...
+datatypes = {'activity data (1 min)','sleep data (1 min)',...
+    'activity data (5 min)','sleep data (5 min)',...
     'rainbow data (30min)'};
 
 % Make the main figure
@@ -94,8 +99,12 @@ uicontrol('Parent',hfig,...
             case 1
                 outputdata = getrawdata(master_data_struct,genoselected);
             case 2
-                outputdata = get5minsleep(master_data_struct,genoselected);
+                outputdata = get1minsleep(master_data_struct,genoselected);
             case 3
+                outputdata = get5minactivity(master_data_struct,genoselected);
+            case 4
+                outputdata = get5minsleep(master_data_struct,genoselected);
+            case 5
                 outputdata = getrainbow(master_data_struct,genoselected);
         end
         
@@ -120,8 +129,12 @@ uicontrol('Parent',hfig,...
             case 1
                 outputdata = getrawdata(master_data_struct,genoselected);
             case 2
-                outputdata = get5minsleep(master_data_struct,genoselected);
+                outputdata = get1minsleep(master_data_struct,genoselected);
             case 3
+                outputdata = get5minactivity(master_data_struct,genoselected);
+            case 4
+                outputdata = get5minsleep(master_data_struct,genoselected);
+            case 5
                 outputdata = getrainbow(master_data_struct,genoselected);
         end
         
@@ -132,36 +145,81 @@ uicontrol('Parent',hfig,...
         mat2clip(outputdata)
     end
 
-    % Extract raw actiity data (in 5-min bins). Each column is a different
-    % fly. Each row is the number of beam crossing in 5 min, hence 288 rows
+    % Extract raw actiity data (in 1-min bins). Each column is a different
+    % fly. Each row is the number of beam crossing in 1 min, hence 1440 rows
     % per day.
     function outputdata = getrawdata(master_data_struct,genoselected)
         outputdata = master_data_struct(genoselected).data;
     end
 
-    % Extract sleep data (in 5-min bins). Each column is a different fly.
-    % Each row is the min's that the fly sleeps in 5 min, hence 288 rows
+    % Extract activity data (in 5-min bins). Each column is a different
+    % fly. Each row is the number of min's of sleep in that 5-min bin,
+    % hence 288 rows per day.
+    function outputdata = get5minactivity(master_data_struct,genoselected)
+        % Use the getrawdata function to obtain 1-min sleep data
+        activitydata = getrawdata(master_data_struct,genoselected);
+        
+        % Get the number of 1-min bins
+        n_bins = size(activitydata,1);
+        
+        % Get the number of flies;
+        n_flies = size(activitydata,2);
+        
+        % Calculate the 30-min sleep data
+        activitydata5 = sum(reshape(activitydata,...
+            [5/interval, n_bins/(5/interval), n_flies]),1);
+        
+        % squeeze the data
+        outputdata = squeeze(activitydata5);
+    end
+
+    % Extract sleep data (in 1-min bins). Each column is a different fly.
+    % Each row is the min's that the fly sleeps in 1 min, hence 1440 rows
     % per day.
+    function outputdata = get1minsleep(master_data_struct,genoselected)
+        outputdata = master_data_struct(genoselected).sleep_data;
+    end
+
+    % Extract sleep data (in 5-min bins). Each column is a different
+    % fly. Each row is the number of min's of sleep in that 5-min bin,
+    % hence 288 rows per day.
     function outputdata = get5minsleep(master_data_struct,genoselected)
-        tempdata = master_data_struct(genoselected).data;
-        outputdata = 5 * double(tempdata == 0);
+        % Use the get1minsleep function to obtain 1-min sleep data
+        sleepdata = get1minsleep(master_data_struct,genoselected);
+        
+        % Get the number of 1-min bins
+        n_bins = size(sleepdata,1);
+        
+        % Get the number of flies;
+        n_flies = size(sleepdata,2);
+        
+        % Calculate the 30-min sleep data
+        sleepdata5 = sum(reshape(sleepdata,...
+            [5/interval, n_bins/(5/interval), n_flies]),1);
+        
+        % squeeze the data
+        outputdata = squeeze(sleepdata5);
     end
 
     % Extract rainbow data (in 30-min bins). Each column is a different
     % fly. Each row is the number of min's of sleep in that 30-min bin,
     % hence 48 rows per day.
     function outputdata = getrainbow(master_data_struct,genoselected)
-        % Use the get5minsleep function to obtain 5-min sleep data
-        sleepdata = get5minsleep(master_data_struct,genoselected);
+        % Use the get1minsleep function to obtain 1-min sleep data
+        sleepdata = get1minsleep(master_data_struct,genoselected);
         
-        % Get the number of 5-min bins
+        % Get the number of 1-min bins
         n_bins = size(sleepdata,1);
         
-        % Calculate the 30-min sleep data
-        sleepdata30 = sum(reshape(sleepdata,6,[]))';
+        % Get the number of flies;
+        n_flies = size(sleepdata,2);
         
-        % Reformat the matrix so that each column is a fly
-        outputdata = reshape(sleepdata30, n_bins/6,[]);
+        % Calculate the 30-min sleep data
+        sleepdata30 = sum(reshape(sleepdata,...
+            [30/interval, n_bins/(30/interval), n_flies]),1);
+        
+        % squeeze the data
+        outputdata = squeeze(sleepdata30);
     end
    
 end

@@ -1,1 +1,7 @@
-Monitor directory,/Users/hannahsomhegyi/Desktop/Dragana lab/After/Behavior/*.xlsxOutput directory,/Users/hannahsomhegyi/Desktop/Dragana lab/After/Behavior/Analyzed DataPC(i.e. ghostscript)? Y/N,N
+Monitor directory,C:\Users\steph\OneDrive\Documents\MATLAB\
+Output directory,C:\Users\steph\OneDrive\Documents\MATLAB\Analyzed Data
+PC(i.e. ghostscript)? Y/N,N
+Dead fly threshold (min of awake),2
+Make actogram? Y/N,N
+Make rainbowplot? Y/N,Y
+Do common analyses Y/N,N

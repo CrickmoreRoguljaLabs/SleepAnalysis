@@ -1,5 +1,6 @@
 % Generate actogram from .txt monitor data
 % Written by Stephen Zhang 2014-5-14
+% Transitioned to moving average instead of binned calculation by Stephen 2016-5-9
 
 % Note: Totals for sleep bout number/length and activities assume that the
 % number of day and night periods are equal. If that's not true, they'll
@@ -55,8 +56,6 @@ end_index = find(strcmp(monitor_data.textdata(:,3),end_time)...
 monitor_data.data = monitor_data.data(start_index:end_index,:);
 monitor_data.textdata = monitor_data.textdata(start_index:end_index,:);
 
-
-
 %% Extract bin information
 
 % Use two time points to determine whether the inter-recording inverval is 0.5 or 1 min
@@ -69,153 +68,218 @@ first_time_hr = str2double(start_time(1:2)); %(datenum(monitor_data.textdata{1,3
 first_time = first_time_hr * 60;
 
 % Use the period to determine how many points should be binned
-points_per_bin=round(5/interval);
+% points_per_bin=round(5/interval);
 
 % Obtain the actogram data
 pared_data=monitor_data.data(:,end-31:end);
 
 % Determine how many bins there will be
-n_bins=ceil(size(pared_data,1)/points_per_bin);
+% n_bins=ceil(size(pared_data,1)/points_per_bin);
 
 % Determine how many points will be in the last bin
-mod_bins=mod(size(pared_data,1),points_per_bin);
-if mod_bins==0;
-    mod_bins=points_per_bin;
-end
+% mod_bins=mod(size(pared_data,1),points_per_bin);
+% if mod_bins==0;
+%     mod_bins=points_per_bin;
+% end
 
 % Prime the binned data matrix
-binned_data=zeros(n_bins,32);
+% binned_data=zeros(n_bins,32);
 
 % Bin the data. Calculate the last bin separately
-for i=1:n_bins-1
-    binned_data(i,:)=sum(pared_data((i-1)*points_per_bin+1:i*points_per_bin,:));
-end
-binned_data(n_bins,:)=sum(pared_data((n_bins-1)*points_per_bin+1:(n_bins-1)*points_per_bin+mod_bins,:));
+% for i=1:n_bins-1
+%     binned_data(i,:)=sum(pared_data((i-1)*points_per_bin+1:i*points_per_bin,:));
+% end
+% binned_data(n_bins,:)=sum(pared_data((n_bins-1)*points_per_bin+1:(n_bins-1)*points_per_bin+mod_bins,:));
 
 %% Separate data by days
 % Determine how many bins will be on the first day
-n_bins_first_day=round((1920-first_time)/points_per_bin/interval);
+% n_bins_first_day=round((1920-first_time)/points_per_bin/interval);
 
 % Determine how many days there will be
-n_days=ceil((n_bins-n_bins_first_day)/288)+1;
+% n_days=ceil((n_bins-n_bins_first_day)/288)+1;
 
 % Set the bounds, in terms of bins, for each day's data
-mat_bounds=zeros(n_days,2);
-mat_bounds(1,1)=1;
-mat_bounds(1,2)=n_bins_first_day;
+% mat_bounds=zeros(n_days,2);
+% mat_bounds(1,1)=1;
+% mat_bounds(1,2)=n_bins_first_day;
 
 % If there is more than 1 day worth of data
-    for i=2:n_days-1
-        mat_bounds(i,1)=mat_bounds(i-1,2)+1;
-        mat_bounds(i,2)=mat_bounds(i-1,2)+288;
-    end
-if n_days>1
-    mat_bounds(n_days,1)=mat_bounds(n_days-1,2)+1;
-    mat_bounds(n_days,2)=n_bins;
-end
+%     for i=2:n_days-1
+%         mat_bounds(i,1)=mat_bounds(i-1,2)+1;
+%         mat_bounds(i,2)=mat_bounds(i-1,2)+288;
+%     end
+% if n_days>1
+%     mat_bounds(n_days,1)=mat_bounds(n_days-1,2)+1;
+%     mat_bounds(n_days,2)=n_bins;
+% end
 
 % Calculate the bounds, in terms of time stamps, for each day's data
-time_bounds=zeros(n_days,2);
-time_bounds(1,1)=first_time_hr;
-time_bounds(1,2)=32;
-time_bounds(2:end,1)=8;
-time_bounds(2:end-1,2)=32;
-time_bounds(end,2)=5/60+8+(mat_bounds(n_days,2)-mat_bounds(n_days,1))*5/60;
+% time_bounds=zeros(n_days,2);
+% time_bounds(1,1)=first_time_hr;
+% time_bounds(1,2)=32;
+% time_bounds(2:end,1)=8;
+% time_bounds(2:end-1,2)=32;
+% time_bounds(end,2)=5/60+8+(mat_bounds(n_days,2)-mat_bounds(n_days,1))*5/60;
 
 %% Plotting data
-if master_mode==0
-    % The plot will be in 2 x 4 format
-    subplot_plan=[2,4];
-    panels_per_page=subplot_plan(1)*subplot_plan(2);
-    % A placeholder variable for how many panels have been plotted
-    panels_done=0;
+% if master_mode==0
+%     % The plot will be in 2 x 4 format
+%     subplot_plan=[2,4];
+%     panels_per_page=subplot_plan(1)*subplot_plan(2);
+%     % A placeholder variable for how many panels have been plotted
+%     panels_done=0;
+% 
+%     % k is the index number for pages
+%     for k=1:ceil((32/panels_per_page))
+%         % Set figure size
+%         figure(101)
+%         set(gcf,'Position',[0 0 1000 691])
+% 
+%         % j is the index number for panels
+%         for j=1:min(panels_per_page,32-panels_done)
+%             subplot(subplot_plan(1),subplot_plan(2),j);
+%             hold on
+% 
+%             % i is the index number for days
+%             for i=1:n_days
+%                 bbar=bar(time_bounds(i,1):5/60:time_bounds(i,1)+(mat_bounds(i,2)-mat_bounds(i,1))*5/60,... % A weird way to determine what the actual x-values are for each point
+%                     binned_data(mat_bounds(i,1):mat_bounds(i,2),j+panels_done)... % The actual y-values for each point
+%                     /100/n_days+(n_days-i)/n_days); % Normalize against 100 and divide each panel into days
+%                 line([8,32],[(n_days-i)/n_days,(n_days-i)/n_days],'Color',[0 0 0]); % This is a line per request of Michelle
+%                 set(bbar,'EdgeColor',[0 0 0]) % Set the bar edge color to black. One vote for purple [153/255 102/255 204/255] from Stephen. RIP teal (2014-2014): [0 128/255 128/255].
+%                 set(bbar,'FaceColor',[0 0 0]) % Set the bar face color to black. One vote for purple from Stephen. RIP teal (2014-2014).
+%                 set(bbar,'BaseValue',(n_days-i)/n_days); % Elevate the bars to restrict them to their own little sub-panels
+%             end
+% 
+%             % Make the figure readable
+%             xlim([8,32]);
+%             ylim([0,1]);
+% 
+%             % Set X labels
+%             set(gca,'XTick',[8 12 16 20 24 28 32]);
+%             set(gca,'xticklabel',[8 12 16 20 24 4 8]);
+%             set(gca,'yticklabel',[]);
+% 
+%             % Draw a box and put on the titles
+%             box on
+%             title([monitor_data.textdata{1,2},' ',filename(1:end-4) ,' Channel ',num2str(j+panels_done)])
+%             hold off
+%         end
+% 
+%         % Make figures look tighter
+%         tightfig;
+% 
+%         % Resize the figures to fit on a piece of paper better (could be improved)
+%         set(gcf,'Position',[0 0 1400 1000],'Color',[1 1 1])
+% 
+%         % Export and append the pdf files
+%         if PC_or_not
+%             export_fig(fullfile(export_path,[filename(1:end-4),'_actogram.pdf']),'-append');
+%         else
+%             saveas(gcf,fullfile(export_path,[filename(1:end-4),'_actogram_', num2str(k), '.pdf']));
+%         end
+%         close 101
+%         panels_done=panels_done+panels_per_page;
+%     end
+% end
 
-    % k is the index number for pages
-    for k=1:ceil((32/panels_per_page))
-        % Set figure size
-        figure(101)
-        set(gcf,'Position',[0 0 1000 691])
 
-        % j is the index number for panels
-        for j=1:min(panels_per_page,32-panels_done)
-            subplot(subplot_plan(1),subplot_plan(2),j);
-            hold on
+%% Sleep data with moving average (unbinned)
 
-            % i is the index number for days
-            for i=1:n_days
-                bbar=bar(time_bounds(i,1):5/60:time_bounds(i,1)+(mat_bounds(i,2)-mat_bounds(i,1))*5/60,... % A weird way to determine what the actual x-values are for each point
-                    binned_data(mat_bounds(i,1):mat_bounds(i,2),j+panels_done)... % The actual y-values for each point
-                    /100/n_days+(n_days-i)/n_days); % Normalize against 100 and divide each panel into days
-                line([8,32],[(n_days-i)/n_days,(n_days-i)/n_days],'Color',[0 0 0]); % This is a line per request of Michelle
-                set(bbar,'EdgeColor',[0 0 0]) % Set the bar edge color to black. One vote for purple [153/255 102/255 204/255] from Stephen. RIP teal (2014-2014): [0 128/255 128/255].
-                set(bbar,'FaceColor',[0 0 0]) % Set the bar face color to black. One vote for purple from Stephen. RIP teal (2014-2014).
-                set(bbar,'BaseValue',(n_days-i)/n_days); % Elevate the bars to restrict them to their own little sub-panels
-            end
+% Determine the number of reads
+n_reads = size(pared_data,1);
 
-            % Make the figure readable
-            xlim([8,32]);
-            ylim([0,1]);
+% Use moving average to smooth data
+sleep_mat_unbinned = pared_data;
 
-            % Set X labels
-            set(gca,'XTick',[8 12 16 20 24 28 32]);
-            set(gca,'xticklabel',[8 12 16 20 24 4 8]);
-            set(gca,'yticklabel',[]);
-
-            % Draw a box and put on the titles
-            box on
-            title([monitor_data.textdata{1,2},' ',filename(1:end-4) ,' Channel ',num2str(j+panels_done)])
-            hold off
-        end
-
-        % Make figures look tighter
-        tightfig;
-
-        % Resize the figures to fit on a piece of paper better (could be improved)
-        set(gcf,'Position',[0 0 1400 1000],'Color',[1 1 1])
-
-        % Export and append the pdf files
-        if PC_or_not
-            export_fig(fullfile(export_path,[filename(1:end-4),'_actogram.pdf']),'-append');
-        else
-            saveas(gcf,fullfile(export_path,[filename(1:end-4),'_actogram_', num2str(k), '.pdf']));
-        end
-        close 101
-        panels_done=panels_done+panels_per_page;
+% Smooth each column (fly tube)
+for i = 1 : 32
+    % Take the moving average and binarize to 1 if =0
+    smoothed_data = smooth(pared_data(:,i), 5/interval) == 0;
+    
+    % get the temporary chain info to use to dilate chains
+    chaininfo_tmp = chainfinder(smoothed_data);
+    
+    % Dilate the chainfronts and chainends
+    for j = 1 : (5/interval - 1)/2
+        % Chain front
+        smoothed_data(max(chaininfo_tmp(:,1)-j,1)) = 1;
+        
+        % Chain end
+        smoothed_data(min(chaininfo_tmp(:,1)+chaininfo_tmp(:,2)+j-1,...
+            n_reads)) = 1;
     end
+    
+    % Update sleep_mat_1min
+    sleep_mat_unbinned(:,i) = smoothed_data;
 end
-%% Sleep data
-
-% Binarize binned data so that one bin of no movement counts as 5 min of
-% sleep
-sleep_mat = binned_data==0;
 
 % Sleep bound calculation. ASSUME DATA STARTS AT 8 AND ENDS AT 20 OR 8.
 % determine the number of sleep bounds (i.e. num day/night periods [so 2x the number of days])
-n_sleep_bounds = floor(n_bins/144);
+n_sleep_bounds = round(n_reads/720*interval);
 
 % Determine the sleep bounds
-sleep_bounds = zeros(n_sleep_bounds,2);
-sleep_bounds(:,2) = (1 : n_sleep_bounds) * 144;
-sleep_bounds(:,1) = (1 : n_sleep_bounds) * 144 - 143;
+sleep_bounds_unbinned = zeros(n_sleep_bounds,2);
+sleep_bounds_unbinned(:,2) = (1 : n_sleep_bounds) * 720/interval;
+sleep_bounds_unbinned(:,1) = (1 : n_sleep_bounds) * 720/interval - 720/interval + 1;
 
 % Calculate the sleep results accordingly
-sleep_results=zeros(size(sleep_bounds,1),32);
-for i=1:n_sleep_bounds
-    sleep_results(i,:)=(sum(sleep_mat(sleep_bounds(i,1):sleep_bounds(i,2),:)))*5;
+sleep_results_unbinned = zeros(n_sleep_bounds, 32);
+for i = 1 : n_sleep_bounds
+    sleep_results_unbinned(i,:) = sum(sleep_mat_unbinned(sleep_bounds_unbinned(i,1):...
+        min(sleep_bounds_unbinned(i,2),n_reads),:)) * interval;
 end
 
 % Calculate the dead flies
-dead_fly_vector=(sleep_results(end-1,:)+sleep_results(end,:))==1440;
+% deadflythresh is the time threshold at which a fly is determined dead
+% deadflythresh = 3, means that if the fly sleep for >= (1440-3) min then
+% it's considered dead.
+dead_fly_vector = sum(sleep_results_unbinned(end-1:end,:))>= (1440 - deadflythresh);
 dead_fly_vector=dead_fly_vector';
 
-% Comment something here so it looks green
-sleep_results=sleep_results';
-avg_sleep_results=zeros(32,3);
-avg_sleep_results(:,2)=mean(sleep_results(:,1:2:n_sleep_bounds),2);
-avg_sleep_results(:,3)=mean(sleep_results(:,2:2:n_sleep_bounds),2);
-avg_sleep_results(:,1)=avg_sleep_results(:,2)+avg_sleep_results(:,3);
-avg_sleep_results(dead_fly_vector,:)=NaN;
-% xlswrite(fullfile(export_path,[filename(1:end-4),'_sleep_results.xls']),avg_sleep_results);
+% Format sleep results and calculate the averages
+sleep_results_unbinned = sleep_results_unbinned';
+avg_sleep_results_unbinned=zeros(32,3);
+avg_sleep_results_unbinned(:,2)=mean(sleep_results_unbinned(:,1:2:n_sleep_bounds),2);
+avg_sleep_results_unbinned(:,3)=mean(sleep_results_unbinned(:,2:2:n_sleep_bounds),2);
+avg_sleep_results_unbinned(:,1)=avg_sleep_results_unbinned(:,2)+avg_sleep_results_unbinned(:,3);
+avg_sleep_results_unbinned(dead_fly_vector,:)=NaN;
+
+%% Sleep data (binned)
+% 
+% % Binarize binned data so that one bin of no movement counts as 5 min of
+% % sleep
+% sleep_mat = binned_data==0;
+% 
+% % Sleep bound calculation. ASSUME DATA STARTS AT 8 AND ENDS AT 20 OR 8.
+% % determine the number of sleep bounds (i.e. num day/night periods [so 2x the number of days])
+% % n_sleep_bounds = floor(n_bins/144);
+% 
+% % Determine the sleep bounds
+% sleep_bounds = zeros(n_sleep_bounds,2);
+% sleep_bounds(:,2) = (1 : n_sleep_bounds) * 144;
+% sleep_bounds(:,1) = (1 : n_sleep_bounds) * 144 - 143;
+% 
+% % Calculate the sleep results accordingly
+% sleep_results=zeros(size(sleep_bounds,1),32);
+% for i=1:n_sleep_bounds
+%     sleep_results(i,:)=(sum(sleep_mat(sleep_bounds(i,1):sleep_bounds(i,2),:)))*5;
+% end
+% 
+% % Calculate the dead flies
+% % dead_fly_vector=(sleep_results(end-1,:)+sleep_results(end,:))>=1440 - deadflythreshold;
+% % dead_fly_vector=dead_fly_vector';
+% 
+% % Comment something here so it looks green
+% sleep_results=sleep_results';
+% avg_sleep_results=zeros(32,3);
+% avg_sleep_results(:,2)=mean(sleep_results(:,1:2:n_sleep_bounds),2);
+% avg_sleep_results(:,3)=mean(sleep_results(:,2:2:n_sleep_bounds),2);
+% avg_sleep_results(:,1)=avg_sleep_results(:,2)+avg_sleep_results(:,3);
+% avg_sleep_results(dead_fly_vector,:)=NaN;
+% % xlswrite(fullfile(export_path,[filename(1:end-4),'_sleep_results.xls']),avg_sleep_results);
+
+
 
 %% Sleep bout and activity calculations
 % Initialize the matrices to store sleep bout numbers, lengths and activities
@@ -228,14 +292,16 @@ delay_mat=zeros(floor(n_sleep_bounds/2),32);
 for i=1:32
     for j=1:n_sleep_bounds
         % Grab the sleep binary vector for that fly
-        tempsleepvec=sleep_mat(sleep_bounds(j,1):sleep_bounds(j,2),i);
+        tempsleepvec = ...
+            sleep_mat_unbinned(sleep_bounds_unbinned(j,1):sleep_bounds_unbinned(j,2),i);
         
         % Grab the activity vector for that fly
-        tempactivityvec=binned_data(sleep_bounds(j,1):sleep_bounds(j,2),i);
+        tempactivityvec = ...
+            pared_data(sleep_bounds_unbinned(j,1):sleep_bounds_unbinned(j,2),i);
         
         % Use the function "chainfinder" to find sleep bouts
         % See the function description for the explanation of the function output
-        tempsleepchainmat=chainfinder(tempsleepvec);
+        tempsleepchainmat = chainfinder(tempsleepvec);
         
         % Use the sleepchain matrix to determine the sleep delay
         % If never slept, delay is not taken into account
@@ -255,7 +321,7 @@ for i=1:32
         % If chainfinder finds no chains, the sleep bout length is 0,
         % otherwise calculate the mean bout length
         if ~isempty(tempsleepchainmat)
-            sleep_bout_length(j,i)=mean(tempsleepchainmat(:,2))*5;
+            sleep_bout_length(j,i)=mean(tempsleepchainmat(:,2));
         else
             sleep_bout_length(j,i)=0;
         end
@@ -286,7 +352,7 @@ avg_sleep_bout_length(dead_fly_vector,:)=NaN;
 % xlswrite(fullfile(export_path,[filename(1:end-4),'_sleep_bout_lengths.xls']),avg_sleep_bout_length);
 
 % disp('Activities')
-activity_mat=activity_mat'/5;
+activity_mat=activity_mat';
 avg_activity_mat=zeros(32,3);
 avg_activity_mat(:,1)=mean(activity_mat(:,1:2:n_sleep_bounds),2); %Day
 avg_activity_mat(:,2)=mean(activity_mat(:,2:2:n_sleep_bounds),2); %Night
@@ -295,16 +361,16 @@ avg_activity_mat(dead_fly_vector,:)=NaN;
 % xlswrite(fullfile(export_path,[filename(1:end-4),'_activities.xls']),avg_activity_mat);
 
 % disp('Delays')
-avg_delay_mat=(5*mean(delay_mat-1,1))';
+avg_delay_mat=(mean(delay_mat-1,1))';
 avg_delay_mat(dead_fly_vector,:)=NaN;
 
 
 % Construct a single output cell for the current monitor
-monitor_output_cell=cell(33,13);
-monitor_output_cell(1,:)={'Total sleep','Day sleep','Night sleep','Sleep bout length (day)','Sleep bout length (night)',...
-    'Sleep bout length (total)','Sleep bout number (day)','Sleep bout number (night)',...
-    'Sleep bout number (total)', 'Day activity','Night activity', 'Total activity', 'Sleep delay'};
-monitor_output_cell(2:33,:)=num2cell([avg_sleep_results,avg_sleep_bout_length,avg_sleep_bout_num,avg_activity_mat,avg_delay_mat]);
+% monitor_output_cell=cell(33,13);
+% monitor_output_cell(1,:)={'Total sleep','Day sleep','Night sleep','Sleep bout length (day)','Sleep bout length (night)',...
+%     'Sleep bout length (total)','Sleep bout number (day)','Sleep bout number (night)',...
+%     'Sleep bout number (total)', 'Day activity','Night activity', 'Total activity', 'Sleep delay'};
+% monitor_output_cell(2:33,:)=num2cell([avg_sleep_results,avg_sleep_bout_length,avg_sleep_bout_num,avg_activity_mat,avg_delay_mat]);
 
 % Output the cell to a csv file
 %cell2csv(fullfile(export_path,[filename(1:end-4),'_monitor_data.csv']),monitor_output_cell);
@@ -334,10 +400,16 @@ if master_mode==1
         n_dead_flies=sum(dead_fly_vector(channels_of_current_geno));
         
         % Write the actogram data to the master structure
-        master_data_struct(current_geno_index).data=[master_data_struct(current_geno_index).data,binned_data(:,channels_of_current_geno)];
+        master_data_struct(current_geno_index).data=[master_data_struct(current_geno_index).data,pared_data(:,channels_of_current_geno)];
         
-        % Write the sleep lengths to the mastere structure
-        master_data_struct(current_geno_index).sleep=[master_data_struct(current_geno_index).sleep;avg_sleep_results(channels_of_current_geno,:)];
+        % Write the raw sleep data (unbinned) to the master structure
+        master_data_struct(current_geno_index).sleep_data=[master_data_struct(current_geno_index).sleep_data,sleep_mat_unbinned(:,channels_of_current_geno)];
+        
+        % Write the sleep lengths to the master structure
+        % master_data_struct(current_geno_index).sleep=[master_data_struct(current_geno_index).sleep;avg_sleep_results(channels_of_current_geno,:)];
+        
+        % Write the sleep lengths (unbinned) to the master structure
+        master_data_struct(current_geno_index).sleep_unbinned=[master_data_struct(current_geno_index).sleep_unbinned;avg_sleep_results_unbinned(channels_of_current_geno,:)];
         
         % Write the sleep bout lengths to te master structure
         master_data_struct(current_geno_index).sleep_bout_lengths=[master_data_struct(current_geno_index).sleep_bout_lengths;avg_sleep_bout_length(channels_of_current_geno,:)];

@@ -47,9 +47,12 @@ total_sleep = zeros(max_num_flies,num_genos);
 total_sleep(:,:) = NaN;
 
 for i = 1:num_genos
-    day_sleep(1:length(sleepData.master_data_struct(i).sleep(:,2)),i) = sleepData.master_data_struct(i).sleep(:,2);
-    night_sleep(1:length(sleepData.master_data_struct(i).sleep(:,3)),i) = sleepData.master_data_struct(i).sleep(:,3);
-    total_sleep(1:length(sleepData.master_data_struct(i).sleep(:,1)),i) = sleepData.master_data_struct(i).sleep(:,1);
+    day_sleep(1:length(sleepData.master_data_struct(i).sleep_unbinned(:,2)),i) =...
+        sleepData.master_data_struct(i).sleep_unbinned(:,2);
+    night_sleep(1:length(sleepData.master_data_struct(i).sleep_unbinned(:,3)),i) =...
+        sleepData.master_data_struct(i).sleep_unbinned(:,3);
+    total_sleep(1:length(sleepData.master_data_struct(i).sleep_unbinned(:,1)),i) =...
+        sleepData.master_data_struct(i).sleep_unbinned(:,1);
 end
 
 day_avg = nanmean(nanmean(day_sleep));
@@ -113,7 +116,7 @@ saveas(gcf, fullfile(sleep_path, [tag,'Total-Sleep.pdf']));
 day_bouts = zeros(max_num_flies,num_genos);
 day_bouts(:,:) = NaN;
 night_bouts = zeros(max_num_flies,num_genos);
-night_bouts = NaN;
+night_bouts(:,:) = NaN;
 
 for i = 1:num_genos
     day_bouts(1:length(sleepData.master_data_struct(i).sleep_bout_lengths(:,1)),i)...
