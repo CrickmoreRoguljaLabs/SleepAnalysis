@@ -25,7 +25,7 @@ PC_or_not = PC_or_not(strfind(PC_or_not, ',')+1:end)=='Y';
 
 % Load threshold for deadfly determination
 deadflythresh = settings_file{4};
-deadflythresh = str2double(deadflythresh(strfind(deadflythresh, ',')+1:end));
+deadflythresh = str2double(deadflythresh(strfind(deadflythresh, ',')+1));
 
 % Load whether actograms are made
 actogram_or_not = settings_file{5};
@@ -372,11 +372,14 @@ if rainbow_or_not
             % Generate rainbow data from raw sleep data
             % Extract the data
             temp_sleep_data_unbinned = master_data_struct(current_rainbow_geno).sleep_data;
-
+            
+            % Remove deadflies
+            temp_sleep_data_unbinned = temp_sleep_data_unbinned(:,current_rainbow_alive_flies);
+            
             % Bin to 30 min, continuous across days
             % This is the individual fly taped rainbow data in case for future usage
             temp_sleep_data_30_min_tape = reshape(temp_sleep_data_unbinned,...
-                [30, 5760/30/interval, master_data_struct(current_rainbow_geno).num_alive_flies]);
+                [30, n_reads/30/interval, master_data_struct(current_rainbow_geno).num_alive_flies]);
             temp_sleep_data_30_min_tape = squeeze(sum(temp_sleep_data_30_min_tape, 1));
 
             % 30-min mean and SEM data, continuous across days
@@ -387,7 +390,7 @@ if rainbow_or_not
             % Bin to 30 min, averaged across days
             % This is the individual fly rainbow data in case for future usage
             temp_sleep_data_30_min = reshape(temp_sleep_data_30_min_tape,...
-                [48, 5760/30/interval/48, master_data_struct(current_rainbow_geno).num_alive_flies]);
+                [48, n_reads/30/interval/48, master_data_struct(current_rainbow_geno).num_alive_flies]);
             temp_sleep_data_30_min = squeeze(mean(temp_sleep_data_30_min, 2));
 
             % 30-min mean and SEM data, averaged across days
