@@ -303,6 +303,16 @@ for i=1:32
         % See the function description for the explanation of the function output
         tempsleepchainmat = chainfinder(tempsleepvec);
         
+        % If first bin is less than 5, get rid of it
+        if tempsleepchainmat(1,2) < (5/interval)
+            tempsleepchainmat(1,:) = [];
+        end
+        
+        % If the last bin is less than 5, get rid of it
+        if tempsleepchainmat(end,2) < (5/interval)
+            tempsleepchainmat(end,:) = [];
+        end
+        
         % Use the sleepchain matrix to determine the sleep delay
         % If never slept, delay is not taken into account
         if ~isempty(tempsleepchainmat)
@@ -345,8 +355,8 @@ avg_sleep_bout_num(dead_fly_vector,:)=NaN;
 % disp('Sleep bout lengths:')
 sleep_bout_length=sleep_bout_length';
 avg_sleep_bout_length=zeros(32,3);
-avg_sleep_bout_length(:,1)=mean(sleep_bout_length(:,1:2:n_sleep_bounds),2); %Day
-avg_sleep_bout_length(:,2)=mean(sleep_bout_length(:,2:2:n_sleep_bounds),2); %Night
+avg_sleep_bout_length(:,1)=mean(sleep_bout_length(:,1:2:n_sleep_bounds),2); %Day, calculated by averaging the days together as in the Griffith software
+avg_sleep_bout_length(:,2)=mean(sleep_bout_length(:,2:2:n_sleep_bounds),2); %Night, calculated by averaging the days together as in the Griffith software
 avg_sleep_bout_length(:,3)= mean(avg_sleep_bout_length(:,1:2),2); %Total
 avg_sleep_bout_length(dead_fly_vector,:)=NaN;
 % xlswrite(fullfile(export_path,[filename(1:end-4),'_sleep_bout_lengths.xls']),avg_sleep_bout_length);
