@@ -283,10 +283,13 @@ avg_sleep_results_unbinned(dead_fly_vector,:)=NaN;
 
 %% Sleep bout and activity calculations
 % Initialize the matrices to store sleep bout numbers, lengths and activities
-sleep_bout_num=zeros(n_sleep_bounds,32);
-sleep_bout_length=zeros(n_sleep_bounds,32);
-activity_mat=zeros(n_sleep_bounds,32);
-delay_mat=zeros(floor(n_sleep_bounds/2),32);
+sleep_bout_num = zeros(n_sleep_bounds,32);
+sleep_bout_length = zeros(n_sleep_bounds,32);
+activity_mat = zeros(n_sleep_bounds,32);
+delay_mat = zeros(floor(n_sleep_bounds/2),32);
+
+% Prime the average sleep bout lengths
+avg_sleep_bout_length = zeros(32,3);
 
 % For each fly loaded, do the following...
 for i=1:32
@@ -340,6 +343,11 @@ for i=1:32
         % activity vector
         activity_mat(j,i)=mean(tempactivityvec(tempsleepvec==0));
     end
+    
+    % Calculate bout length by averaging all the bouts together
+    tempchain = mean(chainfinder(sleep_mat_unbinned(:,i)),1);
+    avg_sleep_bout_length(i,3) = tempchain(2);
+    
 end
 
 % Output the sleep bout numbers, lengths and activities to xls
@@ -354,10 +362,13 @@ avg_sleep_bout_num(dead_fly_vector,:)=NaN;
 
 % disp('Sleep bout lengths:')
 sleep_bout_length=sleep_bout_length';
-avg_sleep_bout_length=zeros(32,3);
-avg_sleep_bout_length(:,1)=mean(sleep_bout_length(:,1:2:n_sleep_bounds),2); %Day, calculated by averaging the days together as in the Griffith software
-avg_sleep_bout_length(:,2)=mean(sleep_bout_length(:,2:2:n_sleep_bounds),2); %Night, calculated by averaging the days together as in the Griffith software
-avg_sleep_bout_length(:,3)= mean(avg_sleep_bout_length(:,1:2),2); %Total
+avg_sleep_bout_length(:,1) = sum(sleep_results_unbinned(:,1:2:(end-1)),2) ./...
+    sum(sleep_bout_num(:,1:2:(end-1)),2); % Day, calculated by averaging all the bouts together
+avg_sleep_bout_length(:,2) = sum(sleep_results_unbinned(:,2:2:end),2) ./...
+    sum(sleep_bout_num(:,2:2:end),2); % Night, calculated by averaging all the bouts together
+%mean(sleep_bout_length(:,1:2:n_sleep_bounds),2); %Day, calculated by averaging the days together as in the Griffith software
+% avg_sleep_bout_length(:,2)=mean(sleep_bout_length(:,2:2:n_sleep_bounds),2); %Night, calculated by averaging the days together as in the Griffith software
+% avg_sleep_bout_length(:,3)= mean(avg_sleep_bout_length(:,1:2),2); %Total
 avg_sleep_bout_length(dead_fly_vector,:)=NaN;
 % xlswrite(fullfile(export_path,[filename(1:end-4),'_sleep_bout_lengths.xls']),avg_sleep_bout_length);
 

@@ -39,6 +39,10 @@ rainbow_or_not = rainbow_or_not(strfind(rainbow_or_not, ',')+1:end)=='Y';
 commonanaly_or_not = settings_file{7};
 commonanaly_or_not = commonanaly_or_not(strfind(commonanaly_or_not, ',')+1:end)=='Y';
 
+% Load whether to output 30 min fly-to-fly sleep results
+sleep30_or_not = settings_file{8};
+sleep30_or_not = sleep30_or_not(strfind(sleep30_or_not, ',')+1:end)=='Y';
+
 % Load input file
 [filename_master, pathname]  =  uigetfile(fullfile(monitor_dir, '*.xlsx'));
 
@@ -281,6 +285,40 @@ end
 % Write the cell data
 cell2csv(fullfile(export_path,[filename_master(1:end-5),'_sleep_data.csv']),sleep_output_cell);
 
+%% Output 30-min sleep data
+if sleep30_or_not
+    % Prime the cell
+    sleep30_output_cell = cell(n_reads/30*interval+1, sum([master_data_struct.num_processed_flies])+1);
+
+    % Establish counter to keep track of row position in cell
+    idx = 1;
+
+    for i = 1:n_genos
+
+        % Populate genotype
+        for k = idx:idx+master_data_struct(i).num_processed_flies-1
+            sleep30_output_cell{1,k} = master_data_struct(i).genotype;        
+        end
+
+        % Bin the data into 30 mins
+        temp_sleep_mat = master_data_struct(i).sleep_data();
+        temp_sleep_mat = squeeze(sum(reshape(temp_sleep_mat,[30/interval, n_reads/30*interval, ...
+            master_data_struct(i).num_processed_flies]),1));
+
+        % Get rid of dead flies
+        temp_sleep_mat(:,~master_data_struct(i).alive_fly_indices) = NaN;
+
+        % Populate sleep data
+        sleep30_output_cell(2:end,idx:idx+master_data_struct(i).num_processed_flies-1) =...
+            num2cell(temp_sleep_mat);
+
+        % Iterate index
+        idx = idx + master_data_struct(i).num_processed_flies;
+
+    end
+
+    cell2csv(fullfile(export_path,[filename_master(1:end-5),'_30_min_sleep_data.csv']),sleep30_output_cell);
+end
 
 %% Output files: other stuff and actogram
 % Can skip during debugging
@@ -341,7 +379,8 @@ if rainbow_or_not
 
         % Prime the output rainbow cells
         rainbow_cell = cell(98,n_geno_of_the_current_rainbowgroup);
-
+        % dailyrainbow_cell = cell(n_reads/30+1, n_geno_of_the_current_rainbowgroup);
+        
         for i = 1:n_geno_of_the_current_rainbowgroup
             % Calculate the average and std/sem sleep per 5 min and 30 min of one genotype
             % Also calculate the day-by-day rainbow data (tape, inspired by the Turing machine)
@@ -382,7 +421,8 @@ if rainbow_or_not
                 [30, n_reads/30/interval, master_data_struct(current_rainbow_geno).num_alive_flies]);
             temp_sleep_data_30_min_tape = squeeze(sum(temp_sleep_data_30_min_tape, 1));
 
-            % 30-min mean and SEM data, continuous across days
+            % 30-min mean and SEM data, continuous across days, averaged
+            % across flies
             temp_average_sleep_per_30_min_tape = mean(temp_sleep_data_30_min_tape,2);
             temp_sem_sleep_per_30_min_tape = std(temp_sleep_data_30_min_tape,1,2)/...
                 sqrt(master_data_struct(current_rainbow_geno).num_alive_flies);
@@ -429,7 +469,7 @@ if rainbow_or_not
         ylabel('sleep per 30 min (min)')
 
         % Save the fig and the data
-        % saveas(fullfile(export_path,[filename_master(1:end-5),'_',num2str(rainbowgroups_unique(j)),'_rainbow.pdf']));
+        saveas(gcf, fullfile(export_path,[filename_master(1:end-5),'_',num2str(rainbowgroups_unique(j)),'_rainbow.pdf']));
         savefig(fullfile(export_path,[filename_master(1:end-5),'_',num2str(rainbowgroups_unique(j)),'_rainbow.fig']));
         cell2csv(fullfile(export_path,[filename_master(1:end-5),'_',num2str(rainbowgroups_unique(j)),'_rainbowdata.csv']),rainbow_cell)
         close gcf
@@ -473,6 +513,7 @@ if rainbow_or_not
             set(102,'Position',plotsizevec);
             panels2print=panels2print-9;
             pages2print=pages2print+1;
+            saveas(102, fullfile(export_path,[filename_master(1:end-5),'_',num2str(rainbowgroups_unique(j)),'_',num2str(pages2print),'_dailyrainbow.pdf']));
             savefig(fullfile(export_path,[filename_master(1:end-5),'_',num2str(rainbowgroups_unique(j)),'_',num2str(pages2print),'_dailyrainbow.fig']));
             close(102)
         end
