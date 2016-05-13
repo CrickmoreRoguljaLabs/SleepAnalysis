@@ -286,10 +286,16 @@ end
 cell2csv(fullfile(export_path,[filename_master(1:end-5),'_sleep_data.csv']),sleep_output_cell);
 
 %% Output 30-min sleep data
-if sleep30_or_not
-    % Prime the cell
-    sleep30_output_cell = cell(n_reads/30*interval+1, sum([master_data_struct.num_processed_flies])+1);
+% Can skip during debugging
 
+if sleep30_or_not
+    % Prime the cells
+    % continuous across days
+    sleep30_output_cell = cell(n_reads/30*interval+1, sum([master_data_struct.num_processed_flies])+1);
+    
+    % average across days
+    sleep30_output_avg_cell = cell(49, sum([master_data_struct.num_processed_flies])+1);
+    
     % Establish counter to keep track of row position in cell
     idx = 1;
 
@@ -297,27 +303,50 @@ if sleep30_or_not
 
         % Populate genotype
         for k = idx:idx+master_data_struct(i).num_processed_flies-1
-            sleep30_output_cell{1,k} = master_data_struct(i).genotype;        
+            % Tape cell
+            sleep30_output_cell{1,k} = master_data_struct(i).genotype;  
+            
+            % Average cell
+            sleep30_output_avg_cell{1,k} = master_data_struct(i).genotype;  
         end
 
         % Bin the data into 30 mins
         temp_sleep_mat = master_data_struct(i).sleep_data();
         temp_sleep_mat = squeeze(sum(reshape(temp_sleep_mat,[30/interval, n_reads/30*interval, ...
             master_data_struct(i).num_processed_flies]),1));
-
+        
+        % average 30-min bins across days
+        temp_sleep_mat_avg = reshape(temp_sleep_mat,[48,n_sleep_bounds/2,...
+            master_data_struct(i).num_processed_flies]);
+        temp_sleep_mat_avg = squeeze(mean(temp_sleep_mat_avg,2));
+        
+        
         % Get rid of dead flies
+        % Tape
         temp_sleep_mat(:,~master_data_struct(i).alive_fly_indices) = NaN;
+        % Averaged
+        temp_sleep_mat_avg(:,~master_data_struct(i).alive_fly_indices) = NaN;
+
 
         % Populate sleep data
+        % Taped
         sleep30_output_cell(2:end,idx:idx+master_data_struct(i).num_processed_flies-1) =...
             num2cell(temp_sleep_mat);
+        % Averaged
+        sleep30_output_avg_cell(2:end,idx:idx+master_data_struct(i).num_processed_flies-1) =...
+            num2cell(temp_sleep_mat_avg);
 
         % Iterate index
         idx = idx + master_data_struct(i).num_processed_flies;
 
     end
 
+    % Taped
     cell2csv(fullfile(export_path,[filename_master(1:end-5),'_30_min_sleep_data.csv']),sleep30_output_cell);
+    
+    % Averaged
+    cell2csv(fullfile(export_path,[filename_master(1:end-5),'_30_min_sleep_data_avg.csv']),sleep30_output_avg_cell);
+
 end
 
 %% Output files: other stuff and actogram
