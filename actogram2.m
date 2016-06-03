@@ -223,6 +223,9 @@ sleep_bounds_unbinned = zeros(n_sleep_bounds,2);
 sleep_bounds_unbinned(:,2) = (1 : n_sleep_bounds) * 720/interval;
 sleep_bounds_unbinned(:,1) = (1 : n_sleep_bounds) * 720/interval - 720/interval + 1;
 
+% In case the monitor lags behind, the last bound can be cut short
+sleep_bounds_unbinned(end) = min(n_reads, sleep_bounds_unbinned(end) );
+
 % Calculate the sleep results accordingly
 sleep_results_unbinned = zeros(n_sleep_bounds, 32);
 for i = 1 : n_sleep_bounds
@@ -307,13 +310,19 @@ for i=1:32
         tempsleepchainmat = chainfinder(tempsleepvec);
         
         % If first bin is less than 5, get rid of it
-        if tempsleepchainmat(1,2) < (5/interval)
-            tempsleepchainmat(1,:) = [];
+        % Check if empty
+        if ~isempty(tempsleepchainmat)
+            if tempsleepchainmat(1,2) < (5/interval)
+                tempsleepchainmat(1,:) = [];
+            end
         end
         
         % If the last bin is less than 5, get rid of it
-        if tempsleepchainmat(end,2) < (5/interval)
-            tempsleepchainmat(end,:) = [];
+        % Check if empty
+        if ~isempty(tempsleepchainmat)
+            if tempsleepchainmat(end,2) < (5/interval)
+                tempsleepchainmat(end,:) = [];
+            end
         end
         
         % Use the sleepchain matrix to determine the sleep delay
