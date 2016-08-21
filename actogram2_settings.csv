@@ -3,6 +3,6 @@ Output directory,C:\Users\steph\OneDrive\Documents\MATLAB\Analyzed Data
 PC(i.e. ghostscript)? Y/N,N
 Dead fly threshold (min of awake),2min
 Make actogram? Y/N,N
-Make rainbowplot? Y/N,Y
+Make rainbowplot? Y/N,N
 Do common analyses Y/N,N
 Output 30 min sleep? Y/N,Y
