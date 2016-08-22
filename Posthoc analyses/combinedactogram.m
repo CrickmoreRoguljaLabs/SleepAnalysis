@@ -8,7 +8,8 @@ day_end = 20;
 binsize_raw = 1;
 
 % Define bin-size (in min)
-binsize = 30;
+binsize = 15;
+n_bins = 1440 / binsize;
 
 % Default path
 defpath = 'C:\Users\steph\Desktop\test for Stephen\test for Stephen\New folder\New folder';
@@ -16,6 +17,21 @@ defpath = 'C:\Users\steph\Desktop\test for Stephen\test for Stephen\New folder\N
 % Find the file
 [fn, filepath] = uigetfile(fullfile(defpath,'*.mat')...
     , 'Choose 1 .mat file to start...');
+
+% 8am-8pm
+%{
+day = [1:12,37:48];
+night = 13:36;
+%}
+
+% Figure sizes [width, height])
+figsize = [600 300];
+
+% Color of the night (0=black, 1=white)
+nightcolor = 0.4;
+
+% Max y-axis
+Y_max = 60;
 
 %% Preprocessing
 
@@ -117,34 +133,45 @@ act_mean = mean(data_mat, 1);
 n_flies = size(data_mat, 1);
 act_sem = std(data_mat, 1)/sqrt(n_flies);
 
-% Rearrange mean and sem data points to start at -4 Zt/CT
-act_mean2 = act_mean([37:48,1:36]);
-act_sem2 = act_sem([37:48,1:36]);
+% Rearrange mean and sem data points to center on 8 am to 8 pm
+% Use these data points to calculate anticipation
+act_mean2 = act_mean([(n_bins * 0.75 + 1) : n_bins , 1 : (n_bins *  0.75)]);
+act_sem2 = act_sem([(n_bins * 0.75 + 1) : n_bins , 1 : (n_bins * 0.75)]);
 
-night = [1:12,37:48];
-day = 13:36;
+% Auto-calculate day-night bins
+day = [1 : ((n_bins/4) - (8-day_start)*(60/binsize)),...
+    ((day_end - 20) * 2 + n_bins * 0.75 + 1) : n_bins];
+night = (n_bins/4 + 1 - (8-day_start)*(60/binsize)) :...
+    ((day_end - 20) * 2 + n_bins * 0.75);
 
+% Make bar graphs for day and night
+figure('Position',[50,50,figsize(1),figsize(2)]);
 
-figure
 hold on
-barnight = bar(night,act_mean2(night),1);
-barday = bar(day, act_mean2(day),1);
+% Bars
+bar(night, act_mean2(night), 1,'FaceColor',[1 1 1]);
+bar(day, act_mean2(day), 1,'FaceColor',[nightcolor nightcolor nightcolor]);
 
-errornight = scatter(night,act_mean2(night)+act_sem2(night));
-errorday = scatter(day,act_mean2(day)+act_sem2(day));
+% Errors
+scatter(night,act_mean2(night)+act_sem2(night),...
+    'MarkerEdgeColor',[0 0 0], 'SizeData', 12);
+scatter(day,act_mean2(day)+act_sem2(day),...
+'MarkerEdgeColor',[0 0 0], 'SizeData', 12,...
+    'MarkerFaceColor',[nightcolor nightcolor nightcolor]);
 hold off
 
-set(barday,'FaceColor',[1 1 1]);
-set(barnight,'FaceColor',[0.4 0.4 0.4]);
-
-set(errorday,'MarkerEdgeColor',[0 0 0], 'SizeData', 12)
-set(errornight,'MarkerEdgeColor',[0 0 0], 'SizeData', 12,...
-    'MarkerFaceColor',[0.4 0.4 0.4])
-
- % Set X labels
-set(gca,'XTick',[5 13 21 29 37 45]);
+% Set X and Y labels
+set(gca,'XTick', n_bins *[1/12 3/12 5/12 7/12 9/12 11/12] + 0.5); 
 set(gca,'xticklabel',[4 8 12 16 20 24]);
 set(gca,'YTick',[0 20 40 60]);
 
-xlim([0.5,48.5])
-ylim([0 60])
+% Axis names
+xlabel('Time')
+ylabel(['Beam crosses per ', num2str(binsize),' min'])
+
+% Set X and Y limits
+xlim([0.5 , n_bins + 0.5])
+ylim([0 Y_max])
+
+% Set figure font size
+set(gca,'FontSize',9)
