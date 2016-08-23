@@ -8,7 +8,7 @@ day_end = 20;
 binsize_raw = 1;
 
 % Define bin-size (in min)
-binsize = 15;
+binsize = 30;
 n_bins = 1440 / binsize;
 
 % Default path
@@ -32,6 +32,9 @@ nightcolor = 0.4;
 
 % Max y-axis
 Y_max = 60;
+
+% Anticipation window (in hours)
+awindow = 3;
 
 %% Preprocessing
 
@@ -139,9 +142,9 @@ act_mean2 = act_mean([(n_bins * 0.75 + 1) : n_bins , 1 : (n_bins *  0.75)]);
 act_sem2 = act_sem([(n_bins * 0.75 + 1) : n_bins , 1 : (n_bins * 0.75)]);
 
 % Auto-calculate day-night bins
-day = [1 : ((n_bins/4) - (8-day_start)*(60/binsize)),...
+night = [1 : ((n_bins/4) - (8-day_start)*(60/binsize)),...
     ((day_end - 20) * 2 + n_bins * 0.75 + 1) : n_bins];
-night = (n_bins/4 + 1 - (8-day_start)*(60/binsize)) :...
+day = (n_bins/4 + 1 - (8-day_start)*(60/binsize)) :...
     ((day_end - 20) * 2 + n_bins * 0.75);
 
 % Make bar graphs for day and night
@@ -149,13 +152,13 @@ figure('Position',[50,50,figsize(1),figsize(2)]);
 
 hold on
 % Bars
-bar(night, act_mean2(night), 1,'FaceColor',[1 1 1]);
-bar(day, act_mean2(day), 1,'FaceColor',[nightcolor nightcolor nightcolor]);
+bar(day, act_mean2(day), 1,'FaceColor',[1 1 1]);
+bar(night, act_mean2(night), 1,'FaceColor',[nightcolor nightcolor nightcolor]);
 
 % Errors
-scatter(night,act_mean2(night)+act_sem2(night),...
-    'MarkerEdgeColor',[0 0 0], 'SizeData', 12);
 scatter(day,act_mean2(day)+act_sem2(day),...
+    'MarkerEdgeColor',[0 0 0], 'SizeData', 12);
+scatter(night,act_mean2(night)+act_sem2(night),...
 'MarkerEdgeColor',[0 0 0], 'SizeData', 12,...
     'MarkerFaceColor',[nightcolor nightcolor nightcolor]);
 hold off
@@ -168,6 +171,7 @@ set(gca,'YTick',[0 20 40 60]);
 % Axis names
 xlabel('Time')
 ylabel(['Beam crosses per ', num2str(binsize),' min'])
+title(geno_chosen)
 
 % Set X and Y limits
 xlim([0.5 , n_bins + 0.5])
@@ -175,3 +179,26 @@ ylim([0 Y_max])
 
 % Set figure font size
 set(gca,'FontSize',9)
+
+%% Calculate anticipation
+% Rearrange data matrix to center on 8-8
+data_mat2 = data_mat(: ,...
+    [(n_bins * 0.75 + 1) : n_bins , 1 : (n_bins *  0.75)]);
+
+% Absolution beam crossing count
+% Morning matrix
+anticipationmat_m = data_mat2(:,...
+    (min(day) - awindow*(60/binsize)) : (min(day)-1));
+
+% Evening matrix
+anticipationmat_e = data_mat2(:,...
+    (max(day) - awindow*(60/binsize) - 1) : (max(day)));
+
+% Summed data
+% Morning sum
+disp(['Morning anticipation in ', num2str(awindow),'-hour window'])
+anticipation_m = sum(anticipationmat_m,2)
+
+% Evening sum
+disp(['Evening anticipation in ', num2str(awindow),'-hour window'])
+anticipation_e = sum(anticipationmat_e,2)
