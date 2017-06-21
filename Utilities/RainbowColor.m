@@ -1,11 +1,11 @@
 %% Default values
-% Use the same color for border (as line)
+% Use the same color for border (as line): 1 = yes, 0 = no
 Border_Color_As_Line = 1;
 
 % If border uses the same color and line, set border transparency here
 BorderAlpha = 0.5;
 
-% Use default shade transparency
+% Use default shade transparency: 1 = yes, 0 = no
 Use_Def_shade_alpha = 1;
 
 % Default shade transparency
