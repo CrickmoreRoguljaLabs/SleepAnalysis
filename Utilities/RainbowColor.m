@@ -1,3 +1,16 @@
+%% Default values
+% Use the same color for border (as line)
+Border_Color_As_Line = 1;
+
+% If border uses the same color and line, set border transparency here
+BorderAlpha = 0.5;
+
+% Use default shade transparency
+Use_Def_shade_alpha = 1;
+
+% Default shade transparency
+Def_shade_alpha = 0.2;
+
 %% Loading figure and parameters
 % Load figure file
 [filename, pathname] = uigetfile('*.fig', 'Choose a figure to edit');
@@ -8,9 +21,12 @@ npanels = length(findall(hfig,'Type','Axes'));
 
 % Find lines
 lines = findall(hfig,'Type','Line');
-nlines = length(lines);
+nlines = length(lines) / 5;
 
-% Find patches/shadows
+% Determine the number of borders
+nborders = length(lines) / 5 * 4;
+
+% Find patches/shades
 patches = findall(hfig,'Type','Patch');
 npatches = length(patches);
 
@@ -24,7 +40,8 @@ linecycle = ngenos * 5;
 patchcycle = ngenos;
 
 % Initialize a construct describing the color parameter
-ColorStruct = struct('geno','','LineInd',[],'LineColor',[],'PatchInd',[],'PatchColor',[], 'PatchAlpha',[]);
+ColorStruct = struct('geno','','LineInd',[],'LineColor',[],'PatchInd',[],...
+    'PatchColor',[], 'PatchAlpha',[],'BorderInd',[],'BorderColor',[]);
 ColorStruct(1:ngenos) = ColorStruct;
 
 
@@ -42,16 +59,23 @@ for i = 1 : ngenos
     % Determine the line indices of each genotype. The messy index
     % algorithm comes from a weird index reversal in generating the figure
     % (not my code). There is no fix for that
-    lineind_tmp = repmat([i; 3*ngenos-2*i+1; 3*ngenos-2*i+2; 5*ngenos-2*i+1; 5*ngenos-2*i+2],...
-        [1 npanels]) + repmat((0 : (npanels-1)) * linecycle, [5 1]);
+    % lineind_tmp = i + (0 : (npanels-1)) * linecycle;
     % lineind_tmp = repmat([i; ngenos+2*i-1; ngenos+2*i; 3*ngenos+2*i-1; 3*ngenos+2*i],...
     %     [1 npanels]) + repmat((0 : (npanels-1)) * linecycle, [5 1]);
     
     % Load line indices
-    ColorStruct(i).LineInd = lineind_tmp(:);
+    ColorStruct(i).LineInd = i + (0 : (npanels-1)) * linecycle;
     
     % Load patch indices (including the weird index reversal - oh well)
     ColorStruct(i).PatchInd = (ngenos+1-i) : patchcycle : npatches;
+    
+    % Load border indices
+    borderind_tmp = [3*ngenos-2*i+1; 3*ngenos-2*i+2; 5*ngenos-2*i+1; 5*ngenos-2*i+2]*...
+        ones(1, npanels) + ones(4,1)*(0 : (npanels-1)) * linecycle;
+    ColorStruct(i).BorderInd = borderind_tmp(:);
+    
+    % Load border colors
+    ColorStruct(i).BorderColor = lines(borderind_tmp(1)).Color;
 end
 
 %% Edit the figures
@@ -69,22 +93,40 @@ while geno2choose ~= 0
     % Load the line and patch indices
     lineindices = ColorStruct(geno2choose).LineInd;
     patchindices = ColorStruct(geno2choose).PatchInd;
+    borderindices = ColorStruct(geno2choose).BorderInd;
     
     % Use the matlab UI to choose color. May not be ideal
-    chosencolor = uisetcolor;
+    chosenlinecolor = uisetcolor(['Line color: ', ColorStruct(geno2choose).geno]);
     
-    % Choose shadow transparency
-    chosenalpha = input('Shade transparency (0 = transparent; 1 = opaque): ');
-    
-    % Change the line colors
-    for i = 1 : nlines/ngenos
-        lines(lineindices(i)).Color = chosencolor;
+    % Use line color for border color unless Border_Color_As_Line = 0
+    if Border_Color_As_Line == 0
+        chosenbordercolor = uisetcolor(['Border color: ', ColorStruct(geno2choose).geno]);
+    else
+        chosenbordercolor = chosenlinecolor * BorderAlpha + ones(1,3) * (1 - BorderAlpha);
     end
     
-    % Change the shadow colors (current the same as line's, just more
+    % Determine if using the default shade transparency
+    if Use_Def_shade_alpha == 1
+        chosenalpha = Def_shade_alpha;
+    else
+        % Choose shade transparency
+        chosenalpha = input('Shade transparency (0 = transparent; 1 = opaque): ');
+    end
+        
+    % Change the line colors
+    for i = 1 : nlines/ngenos
+        lines(lineindices(i)).Color = chosenlinecolor;
+    end
+    
+    % Change the border colors
+    for i = 1 : nborders/ngenos
+        lines(borderindices(i)).Color = chosenbordercolor;
+    end
+    
+    % Change the shade colors (current the same as line's, just more
     % transparent
     for i = 1: npatches/ngenos
-        patches(patchindices(i)).FaceColor = chosencolor;
+        patches(patchindices(i)).FaceColor = chosenlinecolor;
         patches(patchindices(i)).FaceAlpha = chosenalpha;
     end
     
