@@ -143,15 +143,6 @@ while ii<= master_lines_to_read
 end
 close(h)
 
-%% Calculate periodicity
-%{
-for ii = 1 : n_genos
-    % Use the CircadianFT function to calculate the periodicity of the
-    % animals
-    master_data_struct(ii).periodicity = CircadianFT(master_data_struct(ii).data...
-        (:,master_data_struct(ii).alive_fly_indices), 0);
-end
-%}
 
 %% Output files: average sleep data
 % Prime the cell to write data in
